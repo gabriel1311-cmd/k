@@ -1,364 +1,54 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>100 Poemas — Protegido</title>
-  <style>
-    :root{--bg:#0f1724;--card:#0b1220;--accent:#ffd166;--muted:#94a3b8}
-    html,body{height:100%;margin:0;font-family:Inter, system-ui, Arial;background:linear-gradient(180deg,#ffeef0 0%, #fff0f6 100%);color:#2b2b2b}
-    /* fondo de corazones animados */
-    .hearts{position:fixed;inset:0;pointer-events:none;overflow:hidden}
-    .heart{position:absolute;bottom:-10%;width:24px;height:24px;background:radial-gradient(circle at 30% 30%, #fff, transparent 30%),linear-gradient(45deg,#ff6b81,#ffb3c6);transform:rotate(-45deg);border-radius:4px;opacity:.9;animation:rise 12s linear infinite}
-    @keyframes rise{0%{transform:translateY(0) rotate(-45deg) scale(.6);opacity:.9}50%{opacity:.7}100%{transform:translateY(-130vh) rotate(-45deg) scale(1);opacity:0}}
-    .heart::before,.heart::after{content:'';position:absolute;width:24px;height:24px;background:inherit;border-radius:50%}
-    .heart::before{top:-12px;left:0}
-    .heart::after{left:12px;top:0}
-
-    .wrap{max-width:980px;margin:36px auto;padding:24px}
-    header{display:flex;align-items:center;gap:16px}
-    h1{margin:0;font-size:28px}
-    p.lead{margin:6px 0;color:var(--muted)}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:18px}
-    .card{background:var(--card);padding:14px;border-radius:12px;box-shadow:0 6px 18px rgba(2,6,23,.6)}
-    .locked{opacity:.36}
-    .meta{font-size:12px;color:var(--muted);margin-top:8px}
-    button{background:transparent;border:1px solid rgba(255,255,255,.06);padding:8px 10px;border-radius:8px;color:inherit;cursor:pointer}
-    .modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(2,6,23,.6)}
-    .modal-card{width:520px;background:linear-gradient(180deg,#041025,#071226);padding:20px;border-radius:12px;box-shadow:0 10px 40px rgba(2,6,23,.7)}
-    label{display:block;margin:10px 0 6px}
-    input[type=text], input[type=password]{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,.06);background:transparent;color:inherit}
-    footer{margin-top:24px;color:var(--muted);font-size:13px}
-    .poem-full{white-space:pre-wrap;font-size:14px;line-height:1.5}
-    .small{font-size:12px;color:var(--muted)}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>100 Días de Amor para Karina 💖</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="hearts" id="hearts"></div>
-  <div class="wrap">
-    <header>
-      <div>
-        <h1>100 Poemas para Karina — Protegido</h1>
-        <p class="lead">Cada poema se desbloquea 1 cada 24 horas desde tu primera entrada correcta. Se pedirá contraseña cada vez que visites.</p>
-      </div>
-    </header>
-
-    <div id="status" class="small">Cargando…</div>
-
-    <div class="grid" id="grid"></div>
-
-    <footer>
-      <p class="small">Nota: esto es protección *del lado del cliente* — no es segura contra quienes saben inspeccionar código. Para seguridad real usa un backend o servicios con autenticación (Netlify, Cloudflare Access, etc.).</p>
-    </footer>
-  </div>
-
-  <!-- Splash pantalla inicial -->
-  <div id="splash" class="modal" style="display:flex;background:#000;color:#0fefc1;">
-    <div class="modal-card" style="background:transparent;box-shadow:none;border-radius:8px;text-align:center;max-width:640px">
-      <pre style="font-family:monospace;font-size:16px;line-height:1;letter-spacing:1px;margin:0"> 
-  _  _  _____  ____  ____  _     _  ____  _  _  ____  _____  __  __  
- | \| ||_   _||  _ \|  _ \| |   | |/ ___|| \| ||  _ \|_   _||  \/  | 
- | . ` |  | |  | |_) | |_) | |   | |\___ \| . ` || |_) | | |  | |\/| | 
- | |\  |  | |  |  _ <|  _ <| |___| | ___) | |\  ||  _ <  | |  | |  | | 
- |_| \_|  |_|  |_| \_\_| \_\_____|_||____/|_| \_||_| \_\ |_|  |_|  |_| 
-      </pre>
-      <p style="color:#ffd6ea;margin-top:14px;font-weight:700">DESBLOQUEAME</p>
-      <p style="color:#ffb3c6;margin-top:6px">Ingresa el código único para entrar:</p>
-      <pre style="background:rgba(255,255,255,0.03);padding:10px;border-radius:8px;color:#fff;font-family:monospace">
-011100110110111001101111011011110111000001111001
-      </pre>
-      <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
-        <input id="splash-pw" type="password" placeholder="Código binario" style="padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:#fff;width:260px;text-align:center" />
-        <button id="splash-enter" style="padding:10px 14px;border-radius:8px;border:0;background:#ff6b81;color:#fff;cursor:pointer">Entrar</button>
-      </div>
-      <p id="splash-err" style="display:none;color:#ffb4b4;margin-top:8px">Código incorrecto.</p>
-    </div>
-  </div>
-
-  <!-- Modal contraseña (aparece al abrir un poema) -->
-  <div id="pw-modal" class="modal" style="display:none">
-    <div class="modal-card">
-      <h3>Introduce la contraseña</h3>
-      <p class="small">La contraseña se verifica localmente. Se te pedirá cada vez que abras la página.</p>
-      <label for="pw">Contraseña</label>
-      <input id="pw" type="password" autocomplete="off" />
-      <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end">
-        <button id="btn-cancel">Cancelar</button>
-        <button id="btn-ok">Entrar</button>
-      </div>
-      <p id="pw-err" class="small" style="color:#ffb4b4;margin-top:10px;display:none">Contraseña incorrecta.</p>
-    </div>
-  </div>
-
-  <!-- Poema modal -->
-  <div id="poem-modal" class="modal" style="display:none">
-    <div class="modal-card" style="max-height:80vh;overflow:auto">
-      <h3 id="poem-title">Poema</h3>
-      <div id="poem-body" class="poem-full"></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px">
-        <div class="meta" id="poem-meta"></div>
-        <div>
-          <button id="close-poem">Cerrar</button>
+    <!-- Pantalla de bloqueo -->
+    <div id="lockScreen" class="lock-screen active">
+        <div class="lock-content">
+            <pre class="ascii-art">
+    ♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥
+    ♥                       ♥
+    ♥  Desbloquéame con el  ♥
+    ♥  código único que     ♥
+    ♥  sabes                ♥
+    ♥                       ♥
+    ♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥
+            </pre>
+            <div class="lock-input-container">
+                <input type="text" id="passwordInput" placeholder="Ingresa el código..." autocomplete="off">
+                <button id="unlockBtn">Desbloquear ✨</button>
+            </div>
+            <p id="errorMessage" class="error-message"></p>
         </div>
-      </div>
     </div>
-  </div>
-  <div id="poem-modal" class="modal" style="display:none">
-    <div class="modal-card" style="max-height:80vh;overflow:auto">
-      <h3 id="poem-title">Poema</h3>
-      <div id="poem-body" class="poem-full"></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px">
-        <div class="meta" id="poem-meta"></div>
-        <div>
-          <button id="close-poem">Cerrar</button>
-        </div>
-      </div>
+
+    <!-- Página principal -->
+    <div id="mainContent" class="main-content">
+        <div class="hearts-container" id="heartsContainer"></div>
+        
+        <header class="header">
+            <h1 class="main-title">💖 100 días de amor, fe y promesas para Karina 💖</h1>
+        </header>
+
+        <main class="poem-container">
+            <div id="poemDisplay" class="poem-display">
+                <h2 id="poemTitle" class="poem-title"></h2>
+                <div id="poemBody" class="poem-body"></div>
+                <div id="poemCounter" class="poem-counter"></div>
+            </div>
+            <div id="lockedMessage" class="locked-message"></div>
+        </main>
+
+        <footer class="footer">
+            <p>Con todo mi amor y fe en Dios 🙏✨</p>
+        </footer>
     </div>
-  </div>
 
-<script>
-// -------- CONFIGURACIÓN (edítala) --------
-// 1) Establece aquí el HASH_SHA256 de la contraseña que quieras usar (hex en minúsculas).
-//    Para generar el hash localmente en Linux/macOS: echo -n 'mi-contraseña' | sha256sum
-//    (Si no quieres exponer la contraseña en el repo, puedes cambiar este flujo y validar en un servidor.)
-const PASSWORD_HASH = '2bc95ee0a3535bcd36674f727e9b9be1e3351de18f3eb2604389bee14b37b410';
-// 2) Duración entre desbloqueos (ms). 24 horas = 86400000
-const INTERVAL_MS = 24 * 60 * 60 * 1000;
-// 3) Número total de poemas que tendrá la web (asegúrate que coincida con tu archivo poems.json si lo usas)
-const TOTAL_POEMS = 100;
-// ------------------------------------------
-
-// Helper: SHA-256 con Web Crypto -> devuelve hex lowercase
-async function sha256Hex(str) {
-  const enc = new TextEncoder();
-  const data = enc.encode(str);
-  const hash = await crypto.subtle.digest('SHA-256', data);
-  const arr = Array.from(new Uint8Array(hash));
-  return arr.map(b => b.toString(16).padStart(2,'0')).join('');
-}
-
-// Cargamos los poemas embebidos (generados) — 100 entradas, desde 9 de octubre de 2025
-const POEMS = "+json_str}]};
-async function loadPoems() {
-  // devolvemos una promesa para mantener la API anterior
-  return Promise.resolve(POEMS.slice(0, TOTAL_POEMS));
-}
-
-// Guardar/leer timestamp inicial en localStorage por usuario
-function getStartTs() {return Number(localStorage.getItem('poems_start_ts')||0)}
-function setStartTs(ts){localStorage.setItem('poems_start_ts', String(ts))}
-
-// UI
-const grid = document.getElementById('grid');
-const status = document.getElementById('status');
-const modal = document.getElementById('pw-modal');
-const poemModal = document.getElementById('poem-modal');
-const pwInput = document.getElementById('pw');
-const btnOk = document.getElementById('btn-ok');
-const btnCancel = document.getElementById('btn-cancel');
-const pwErr = document.getElementById('pw-err');
-const poemTitle = document.getElementById('poem-title');
-const poemBody = document.getElementById('poem-body');
-const poemMeta = document.getElementById('poem-meta');
-const closePoem = document.getElementById('close-poem');
-
-let poems = [];
-let unlockedCount = 0;
-let authedThisVisit = false;
-
-async function requirePassword() {
-  modal.style.display = 'flex';
-  pwInput.value = '';
-  pwErr.style.display = 'none';
-  pwInput.focus();
-  return new Promise((resolve)=>{
-    btnCancel.onclick = ()=>{ modal.style.display='none'; resolve(false); };
-    btnOk.onclick = async ()=>{
-      const val = pwInput.value || '';
-      const h = await sha256Hex(val);
-      if (h === PASSWORD_HASH) {
-        modal.style.display='none';
-        authedThisVisit = true;
-        resolve(true);
-      } else {
-        pwErr.style.display='block';
-        resolve(false);
-      }
-    };
-  });
-}
-
-function computeUnlocked() {
-  // calculamos cuántos poemas están desbloqueados con fechas fijas: día 1 = 9 oct 2025
-  const base = new Date(Date.UTC(2025, 9, 9)); // months 0-indexed -> 9 = octubre
-  const now = new Date();
-  // normalize to local date (ignore time)
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  let count = 0;
-  for (let i = 0; i < TOTAL_POEMS; i++) {
-    const d = new Date(base);
-    d.setDate(d.getDate() + i);
-    // compare dates ignoring time
-    const dLocal = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-    if (today >= dLocal) count++;
-  }
-  return count;
-}
-
-function formatDateSpanish(date){
-  const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-  return `${date.getDate()} de ${months[date.getMonth()]} de ${date.getFullYear()}`;
-}
-
-function updateStatus() {
-  const base = new Date(Date.UTC(2025, 9, 9));
-  const now = new Date();
-  const unlocked = computeUnlocked();
-  if (unlocked >= TOTAL_POEMS) {
-    status.textContent = `¡Todos los poemas (${TOTAL_POEMS}) están desbloqueados!`;
-    return;
-  }
-  const nextIdx = unlocked + 1;
-  const nextDate = new Date(base);
-  nextDate.setDate(nextDate.getDate() + (nextIdx - 1));
-  status.textContent = `Desbloqueados: ${unlocked} / ${TOTAL_POEMS}. Siguiente (poema ${nextIdx}) se desbloquea el ${formatDateSpanish(nextDate)}.`;
-}
-
-function renderGrid()() {
-  grid.innerHTML = '';
-  for (let i=0;i<TOTAL_POEMS;i++){
-    const idx = i+1;
-    const unlocked = i < unlockedCount;
-    const card = document.createElement('div');
-    card.className = 'card' + (unlocked? '':' locked');
-    const title = document.createElement('div');
-    title.textContent = poems[i] && poems[i].title ? poems[i].title : `Poema #${idx}`;
-    const btn = document.createElement('button');
-    btn.textContent = unlocked ? 'Leer' : 'Bloqueado';
-    btn.onclick = ()=>onOpenPoem(idx-1);
-    const meta = document.createElement('div');
-    meta.className = 'meta';
-    if (unlocked) {
-      meta.textContent = 'Desbloqueado';
-    } else {
-      const base = new Date(Date.UTC(2025, 9, 9));
-      const unlockDate = new Date(base);
-      unlockDate.setDate(unlockDate.getDate() + i);
-      const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-      meta.textContent = `Se desbloquea el ${unlockDate.getDate()} de ${months[unlockDate.getMonth()]} de ${unlockDate.getFullYear()}`;
-    }
-    card.appendChild(title);
-    card.appendChild(document.createElement('br'));
-    card.appendChild(btn);
-    card.appendChild(meta);
-    grid.appendChild(card);
-  }
-}
-
-function updateStatus(startTs) {
-  const now = Date.now();
-  if (!startTs) {
-    status.textContent = 'Aún no comenzaste. Al entrar con la contraseña por primera vez se iniciará la cuenta y se desbloqueará el primer poema.';
-    return;
-  }
-  const nextIdx = unlockedCount + 1;
-  if (unlockedCount >= TOTAL_POEMS) {
-    status.textContent = `¡Todos los poemas (${TOTAL_POEMS}) están desbloqueados!`;
-    return;
-  }
-  const nextUnlockAt = startTs + (unlockedCount) * INTERVAL_MS; // unlockedCount ya es número desbloqueado
-  const msLeft = nextUnlockAt - now;
-  const hours = Math.max(0, Math.floor(msLeft / (1000*60*60)));
-  const mins = Math.max(0, Math.floor((msLeft % (1000*60*60)) / (1000*60)));
-  status.textContent = `Desbloqueados: ${unlockedCount} / ${TOTAL_POEMS}. Siguiente (poema ${nextIdx}) en aprox. ${hours}h ${mins}m.`;
-}
-
-async function onOpenPoem(index) {
-  if (index >= unlockedCount) return; // no abrir
-  // pedir contraseña cada vez
-  const ok = await requirePassword();
-  if (!ok) return;
-  // mostrar poema
-  const p = poems[index] || {title:`Poema #${index+1}`, body:'(vacío)'};
-  poemTitle.textContent = p.title || `Poema #${index+1}`;
-  poemBody.textContent = p.body || '';
-  poemMeta.textContent = `Poema ${index+1} — ${unlockedCount} desbloqueados`;
-  poemModal.style.display = 'flex';
-}
-closePoem.onclick = ()=>{ poemModal.style.display='none'; };
-
-// Inicialización
-(async ()=>{
-  try {
-    poems = await loadPoems();
-    // asegurar length
-    while (poems.length < TOTAL_POEMS) poems.push({title:`Poema #${poems.length+1}`, body:'(vacío)'});
-
-    // calcular desbloqueados según fechas fijas
-    unlockedCount = computeUnlocked();
-    renderGrid();
-    updateStatus();
-  } catch (err) {
-    status.textContent = 'Error al cargar.';
-    console.error(err);
-  }
-})();
-
-// cerrar modales con ESC
-window.addEventListener('keydown',(e)=>{
-  if (e.key==='Escape'){
-    if (modal.style.display==='flex') modal.style.display='none';
-    if (poemModal.style.display==='flex') poemModal.style.display='none';
-  }
-});
-
-// Generador de corazones decorativos
-(function createHearts(){
-  const container = document.getElementById('hearts');
-  const count = 22;
-  for(let i=0;i<count;i++){
-    const h = document.createElement('div');
-    h.className='heart';
-    h.style.left = Math.random()*100+'%';
-    h.style.width = (12+Math.random()*36)+'px';
-    h.style.height = h.style.width;
-    h.style.animationDuration = (8+Math.random()*10)+'s';
-    h.style.opacity = 0.6 + Math.random()*0.4;
-    h.style.bottom = -(10+Math.random()*50)+'%';
-    container.appendChild(h);
-  }
-})();
-
-// Splash handlers
-document.getElementById('splash-enter').onclick = async function(){
-  const v = document.getElementById('splash-pw').value || '';
-  const h = await sha256Hex(v);
-  if (h === PASSWORD_HASH) {
-    document.getElementById('splash').style.display = 'none';
-  } else {
-    document.getElementById('splash-err').style.display = 'block';
-  }
-};
-
-// allow Enter key on splash
-document.getElementById('splash-pw').addEventListener('keydown', function(e){ if(e.key==='Enter') document.getElementById('splash-enter').click(); });
-
-
-</script>
-
-<!-- INSTRUCCIONES (no editarlas si no sabes lo que haces):
-  1) Genera el hash de la contraseña y reemplaza PASSWORD_HASH.
-     - Linux/macOS: echo -n 'tu-contraseña' | sha256sum
-     - Windows (PowerShell): -NoNewline echo -n 'tu-contraseña' | shasum -a 256
-  2) (Opcional) Crea un archivo poems.json en el mismo repo con un array JSON:
-     [ {"title":"Mi poema","body":"Línea1\nLínea2"}, ... ]
-     Asegúrate que tenga al menos 100 entradas o ajusta TOTAL_POEMS.
-  3) Sube este archivo (y poems.json si lo usas) al repositorio y habilita GitHub Pages en la rama main (o gh-pages).
-  4) Limitación de seguridad: GitHub Pages es estático. Cualquiera puede ver el código fuente y el hash; la contraseña se puede adivinar por fuerza bruta si es débil. Para seguridad real, usa un backend o un servicio con autenticación.
-  5) Si quieres, puedo ayudarte a:
-     - Generar 100 poemas de ejemplo
-     - Crear poems.json preparado para subir
-     - Hacer un flujo más seguro con Netlify Functions / Cloudflare Access
--->
+    <script src="script.js"></script>
 </body>
 </html>
