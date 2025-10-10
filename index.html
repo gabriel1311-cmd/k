@@ -3,52 +3,567 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>100 Días de Amor para Karina 💖</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Para Karina — Un Poema Diario</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Pantalla de bloqueo */
+        .lock-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: #000000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .lock-screen.fade-out {
+            opacity: 0;
+        }
+
+        .lock-container {
+            text-align: center;
+        }
+
+        .ascii-art {
+            color: #ff69b4;
+            font-size: 1.2rem;
+            font-family: 'Courier New', monospace;
+            line-height: 1.4;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px #ff69b4, 0 0 20px #ff69b4, 0 0 30px #ff1493;
+            }
+            to {
+                text-shadow: 0 0 20px #ff69b4, 0 0 30px #ff1493, 0 0 40px #ff1493;
+            }
+        }
+
+        .unlock-form {
+            margin-top: 2rem;
+        }
+
+        .password-input {
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            border: 2px solid #ff69b4;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border-radius: 25px;
+            width: 300px;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .password-input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 15px #ff69b4;
+        }
+
+        .password-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .unlock-btn {
+            padding: 0.8rem 2rem;
+            font-size: 1rem;
+            background: linear-gradient(45deg, #ff69b4, #ff1493);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .unlock-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #ff69b4;
+        }
+
+        .error-message {
+            color: #ff69b4;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            min-height: 1.5rem;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Página principal */
+        .main-content {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #ffeef8, #ffe0f0, #ffd4e5);
+            animation: gradientShift 10s ease infinite;
+            opacity: 0;
+            animation: fadeInMain 1s ease forwards;
+        }
+
+        .main-content.hidden {
+            display: none;
+        }
+
+        @keyframes fadeInMain {
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background: linear-gradient(135deg, #ffeef8, #ffe0f0, #ffd4e5); }
+            50% { background: linear-gradient(135deg, #ffd4e5, #ffeef8, #ffe0f0); }
+        }
+
+        /* Encabezado */
+        .main-header {
+            padding: 3rem 1rem;
+            text-align: center;
+        }
+
+        .main-title {
+            color: #d6336c;
+            font-size: 2.5rem;
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        /* Contenedor de corazones */
+        .hearts-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .floating-heart {
+            position: absolute;
+            animation: fall linear forwards;
+            opacity: 0;
+            animation-fill-mode: forwards;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-10vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(110vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Contenedor del poema */
+        .poem-container {
+            padding: 2rem 1rem;
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .poem-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 10px 30px rgba(255, 105, 180, 0.3);
+            border: 3px solid #ffc0cb;
+            animation: slideUp 1s ease forwards;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .poem-title {
+            font-family: 'Georgia', serif;
+            font-size: 1.8rem;
+            color: #d6336c;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .poem-body {
+            font-family: 'Brush Script MT', cursive;
+            font-size: 1.5rem;
+            color: #5d3a5a;
+            font-style: italic;
+            line-height: 2.2;
+            text-align: center;
+            white-space: pre-line;
+            margin-bottom: 2rem;
+        }
+
+        .poem-info {
+            text-align: center;
+            color: #ff69b4;
+            font-size: 1.1rem;
+        }
+
+        .poem-info p {
+            margin: 0.5rem 0;
+        }
+
+        /* Footer */
+        .main-footer {
+            padding: 2rem;
+            text-align: center;
+            color: #d6336c;
+            font-style: italic;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Responsive Design */
+        @media screen and (max-width: 768px) {
+            .ascii-art {
+                font-size: 0.9rem;
+            }
+            
+            .password-input {
+                width: 90%;
+                max-width: 300px;
+            }
+            
+            .main-title {
+                font-size: 1.8rem;
+                padding: 0 1rem;
+            }
+            
+            .poem-card {
+                padding: 2rem;
+                margin: 0 1rem;
+            }
+            
+            .poem-title {
+                font-size: 1.4rem;
+            }
+            
+            .poem-body {
+                font-size: 1.2rem;
+                line-height: 2;
+            }
+            
+            .poem-info {
+                font-size: 1rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <!-- Pantalla de bloqueo -->
-    <div id="lockScreen" class="lock-screen active">
-        <div class="lock-content">
+
+    <div id="lockScreen" class="lock-screen">
+        <div class="lock-container">
             <pre class="ascii-art">
-    ♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥
-    ♥                       ♥
-    ♥  Desbloquéame con el  ♥
-    ♥  código único que     ♥
-    ♥  sabes                ♥
-    ♥                       ♥
-    ♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥
+  _  _  _  _  _  _  _  _  _  _
+ | K | A | R | I | N | A | | L | O | V | E |
+  ¯  ¯  ¯  ¯  ¯  ¯  ¯  ¯  ¯  ¯
+                  / \
+                 | ♡ |
+                  \ /
             </pre>
-            <div class="lock-input-container">
-                <input type="text" id="passwordInput" placeholder="Ingresa el código..." autocomplete="off">
-                <button id="unlockBtn">Desbloquear ✨</button>
-            </div>
-            <p id="errorMessage" class="error-message"></p>
+            <form id="unlockForm" class="unlock-form">
+                <input type="password" id="passwordInput" class="password-input" placeholder="Ingresa la palabra mágica..." required>
+                <button type="submit" class="unlock-btn">DESBLOQUEAR BENDICIÓN</button>
+                <p id="errorMessage" class="error-message"></p>
+            </form>
         </div>
     </div>
 
-    <!-- Página principal -->
-    <div id="mainContent" class="main-content">
-        <div class="hearts-container" id="heartsContainer"></div>
-        
-        <header class="header">
-            <h1 class="main-title">💖 100 días de amor, fe y promesas para Karina 💖</h1>
+    <div id="mainContent" class="main-content hidden">
+
+        <div id="heartsContainer" class="hearts-container"></div>
+
+        <header class="main-header">
+            <h1 class="main-title">💌 Para mi Karina, con Amor Eterno 👑</h1>
         </header>
 
-        <main class="poem-container">
-            <div id="poemDisplay" class="poem-display">
-                <h2 id="poemTitle" class="poem-title"></h2>
-                <div id="poemBody" class="poem-body"></div>
-                <div id="poemCounter" class="poem-counter"></div>
+        <section class="poem-container">
+            <div class="poem-card">
+                <h2 id="currentPoemTitle" class="poem-title"></h2>
+                <pre id="currentPoemBody" class="poem-body"></pre>
+                <div class="poem-info">
+                    <p>Poema <span id="poemNumber"></span></p>
+                    <p>Fecha: <span id="poemDate"></span></p>
+                </div>
             </div>
-            <div id="lockedMessage" class="locked-message"></div>
-        </main>
+        </section>
 
-        <footer class="footer">
-            <p>Con todo mi amor y fe en Dios 🙏✨</p>
+        <footer class="main-footer">
+            <p>"Dios nos unió con hilos de eternidad."</p>
         </footer>
+
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        // Array de los poemas (los que me diste)
+        const POEMS = [
+            { "title": "Poema 1 — 9 de octubre de 2025", "body": "Dios tejió tu nombre en mi alma,\nmi oración se volvió sonrisa,\ny mi amor floreció en tus manos." },
+            { "title": "Poema 2 — 10 de octubre de 2025", "body": "Como Ladybug protege París,\nguardo cada latido tuyo,\nporque eres mi milagro divino." },
+            { "title": "Poema 3 — 11 de octubre de 2025", "body": "En tus ojos veo el cielo prometido,\nKarina, luz de mi despertar,\nDios nos unió con hilos de eternidad." },
+            { "title": "Poema 4 — 12 de octubre de 2025", "body": "Snoopy duerme sobre su casita,\nyo descanso en tu corazón,\nporque allí está mi hogar verdadero." },
+            { "title": "Poema 5 — 13 de octubre de 2025", "body": "Tu risa es oración que sube al cielo,\ntu abrazo es templo de paz,\ny tu amor es mi fe hecha canción." },
+            { "title": "Poema 6 — 14 de octubre de 2025", "body": "Cada mañana le agradezco a Dios,\npor despertar a tu lado,\nporque eres el sueño que se hizo real." },
+            { "title": "Poema 7 — 15 de octubre de 2025", "body": "Como los miraculous del destino,\nnuestro amor tiene magia,\nbendecida por manos celestiales." },
+            { "title": "Poema 8 — 16 de octubre de 2025", "body": "Tu voz es melodía sagrada,\nque calma tormentas en mi pecho,\ny me recuerda que no estoy solo." },
+            { "title": "Poema 9 — 17 de octubre de 2025", "body": "Snoopy escribe cartas al cielo,\nyo escribo promesas en tu piel,\ncon tinta de fe y devoción." },
+            { "title": "Poema 10 — 18 de octubre de 2025", "body": "Karina, eres mi respuesta divina,\na preguntas que nunca hice,\nporque Dios siempre supo lo que necesitaba." },
+            { "title": "Poema 11 — 19 de octubre de 2025", "body": "En tus manos encuentro consuelo,\nen tu mirada hallo propósito,\ny en tu amor descubro a Dios." },
+            { "title": "Poema 12 — 20 de octubre de 2025", "body": "Como Marinette guarda su identidad,\nguardo cada secreto tuyo,\nen el cofre sagrado de mi alma." },
+            { "title": "Poema 13 — 21 de octubre de 2025", "body": "Contigo aprendí que el amor,\nno es solo sentimiento,\nes acto de fe que se renueva." },
+            { "title": "Poema 14 — 22 de octubre de 2025", "body": "Dios pintó tu sonrisa en mis días,\ny desde entonces todo brilla,\ncon colores que antes no existían." },
+            { "title": "Poema 15 — 23 de octubre de 2025", "body": "Como Snoopy ama sus galletas,\nyo amo cada gesto tuyo,\nporque nutren mi espíritu hambriento." },
+            { "title": "Poema 16 — 24 de octubre de 2025", "body": "Tu nombre es mi oración favorita,\nla repito en silencio y en voz alta,\nporque en ella habita la gracia." },
+            { "title": "Poema 17 — 25 de octubre de 2025", "body": "Karina, eres el jardín donde Dios,\nplantó las flores de mi alegría,\ny cada día florecen más hermosas." },
+            { "title": "Poema 18 — 26 de octubre de 2025", "body": "En noches de duda y temor,\ntu luz me guía de regreso,\nal camino que Dios trazó para nosotros." },
+            { "title": "Poema 19 — 27 de octubre de 2025", "body": "Como Ladybug y Chat Noir,\nsomos equipo perfecto,\nunidos por designio divino." },
+            { "title": "Poema 20 — 28 de octubre de 2025", "body": "Tu corazón late canciones,\nque mi alma aprendió a bailar,\nen la pista de nuestro amor eterno." },
+            { "title": "Poema 21 — 29 de octubre de 2025", "body": "Agradezco a Dios cada segundo,\nque me permite quererte,\nporque amarte es mi bendición mayor." },
+            { "title": "Poema 22 — 30 de octubre de 2025", "body": "Snoopy baila bajo la luna,\nyo bailo en tus brazos,\nporque allí está mi paraíso." },
+            { "title": "Poema 23 — 31 de octubre de 2025", "body": "Karina, eres milagro cotidiano,\nque renueva mi fe cada día,\ny me enseña a creer en lo imposible." },
+            { "title": "Poema 24 — 1 de noviembre de 2025", "body": "Tu amor es catedral de luz,\ndonde rezo cada mañana,\ngratitud infinita por tenerte." },
+            { "title": "Poema 25 — 2 de noviembre de 2025", "body": "Como los miraculous protegen,\nmi amor te cuida en silencio,\ncon la fuerza que Dios me otorga." },
+            { "title": "Poema 26 — 3 de noviembre de 2025", "body": "En tu pecho encuentro refugio,\nen tu voz hallo paz,\ny en tus labios descubro el cielo." },
+            { "title": "Poema 27 — 4 de noviembre de 2025", "body": "Dios escribió nuestra historia,\ncon tinta de estrellas,\ny cada capítulo es más hermoso." },
+            { "title": "Poema 28 — 5 de noviembre de 2025", "body": "Como Snoopy sueña en su techo,\nyo sueño contigo despierto,\nporque eres realidad que supera fantasías." },
+            { "title": "Poema 29 — 6 de noviembre de 2025", "body": "Karina, tu existencia es prueba,\nde que Dios escucha oraciones,\nincluso las que no sabía pronunciar." },
+            { "title": "Poema 30 — 7 de noviembre de 2025", "body": "Camino contigo por senderos,\nque antes parecían oscuros,\npero tu luz los volvió radiantes." },
+            { "title": "Poema 31 — 8 de noviembre de 2025", "body": "Como Marinette crea con amor,\nDios creó tu alma perfecta,\npara complementar la mía." },
+            { "title": "Poema 32 — 9 de noviembre de 2025", "body": "Tu risa es himno celestial,\nque alegra hasta los ángeles,\ny llena mi mundo de música." },
+            { "title": "Poema 33 — 10 de noviembre de 2025", "body": "En cada oración menciono tu nombre,\nporque eres respuesta y pregunta,\nel misterio hermoso de mi vida." },
+            { "title": "Poema 34 — 11 de noviembre de 2025", "body": "Snoopy abraza a Woodstock,\nyo abrazo tu esencia entera,\ncon ternura que nace del alma." },
+            { "title": "Poema 35 — 12 de noviembre de 2025", "body": "Karina, eres el verso favorito,\nque Dios escribió en mi historia,\ny que leo una y otra vez." },
+            { "title": "Poema 36 — 13 de noviembre de 2025", "body": "Tu amor me enseñó a perdonar,\na tener paciencia infinita,\ny a confiar en planes divinos." },
+            { "title": "Poema 37 — 14 de noviembre de 2025", "body": "Como Ladybug purifica akumas,\ntu amor purifica mis miedos,\ny los transforma en esperanza." },
+            { "title": "Poema 38 — 15 de noviembre de 2025", "body": "Dios pintó el atardecer,\npero te dio a ti los colores,\nmás hermosos de su paleta." },
+            { "title": "Poema 39 — 16 de noviembre de 2025", "body": "En tus ojos leo promesas,\nque el tiempo nunca borrará,\nporque están escritas en eternidad." },
+            { "title": "Poema 40 — 17 de noviembre de 2025", "body": "Como Snoopy vuela en sueños,\nvuelo contigo en realidad,\nhacia horizontes de amor infinito." },
+            { "title": "Poema 41 — 18 de noviembre de 2025", "body": "Karina, eres la plegaria cumplida,\nque ilumina cada amanecer,\ny bendice cada anochecer mío." },
+            { "title": "Poema 42 — 19 de noviembre de 2025", "body": "Tu corazón es templo sagrado,\ndonde habita la paz,\ny donde aprendo a ser mejor." },
+            { "title": "Poema 43 — 20 de noviembre de 2025", "body": "Dios tejió nuestros destinos,\ncon hilos de oro y luz,\ny creó obra maestra de amor." },
+            { "title": "Poema 44 — 21 de noviembre de 2025", "body": "Como los miraculous del destino,\nnuestra unión tiene propósito,\nque trasciende lo terrenal." },
+            { "title": "Poema 45 — 22 de noviembre de 2025", "body": "Tu voz es brisa celestial,\nque refresca mi espíritu cansado,\ny me recuerda que tengo hogar." },
+            { "title": "Poema 46 — 23 de noviembre de 2025", "body": "Snoopy espera con paciencia,\nyo espero cada momento contigo,\nporque valen la eternidad." },
+            { "title": "Poema 47 — 24 de noviembre de 2025", "body": "Karina, en ti descubrí,\nque el amor verdadero,\nes reflejo del amor de Dios." },
+            { "title": "Poema 48 — 25 de noviembre de 2025", "body": "Cada día a tu lado,\nes regalo divino que desenvuelvo,\ncon asombro y gratitud renovados." },
+            { "title": "Poema 49 — 26 de noviembre de 2025", "body": "Como Marinette protege París,\nprotejo nuestro amor con fe,\ncontra todo viento y marea." },
+            { "title": "Poema 50 — 27 de noviembre de 2025", "body": "Tu sonrisa es amanecer,\nque rompe mi oscuridad,\ny anuncia días de gracia." },
+            { "title": "Poema 51 — 28 de noviembre de 2025", "body": "Dios susurra tu nombre en mi oído,\ncuando necesito fortaleza,\nporque eres mi bendición constante." },
+            { "title": "Poema 52 — 29 de noviembre de 2025", "body": "Como Snoopy es feliz en simplicidad,\nsoy feliz en tu presencia pura,\nsin necesidad de más nada." },
+            { "title": "Poema 53 — 30 de noviembre de 2025", "body": "Karina, eres el milagro,\nque no pedí pero recibí,\ny que cuido como tesoro divino." },
+            { "title": "Poema 54 — 1 de diciembre de 2025", "body": "En tus brazos encuentro iglesia,\ndonde rezo sin palabras,\ny donde Dios me escucha siempre." },
+            { "title": "Poema 55 — 2 de diciembre de 2025", "body": "Tu amor es maná celestial,\nque alimenta mi alma cada día,\ny me mantiene vivo de verdad." },
+            { "title": "Poema 56 — 3 de diciembre de 2025", "body": "Como Ladybug restaura orden,\ntu amor restaura mi esperanza,\ny me recuerda que todo es posible." },
+            { "title": "Poema 57 — 4 de diciembre de 2025", "body": "Dios me mostró el camino,\ny ese camino tenía tu nombre,\nescrito en cada piedra del sendero." },
+            { "title": "Poema 58 — 5 de diciembre de 2025", "body": "Como Snoopy ama la vida,\namo cada segundo contigo,\nporque son instantes de eternidad." },
+            { "title": "Poema 59 — 6 de diciembre de 2025", "body": "Karina, tu esencia es poema,\nque Dios escribió con ternura,\ny que leo con devoción infinita." },
+            { "title": "Poema 60 — 7 de diciembre de 2025", "body": "En tu mirada encuentro respuestas,\na preguntas que mi alma hace,\nen silencio de madrugada." },
+            { "title": "Poema 61 — 8 de diciembre de 2025", "body": "Tu risa es campanada celestial,\nque anuncia momentos de alegría,\ny aleja toda sombra de mi vida." },
+            { "title": "Poema 62 — 9 de diciembre de 2025", "body": "Como los miraculous se complementan,\ntú y yo somos mitades divinas,\nque Dios unió con amor perfecto." },
+            { "title": "Poema 63 — 10 de diciembre de 2025", "body": "Dios me dio manos para abrazarte,\nvoz para decirte te amo,\ny corazón para amarte eternamente." },
+            { "title": "Poema 64 — 11 de diciembre de 2025", "body": "Snoopy sueña aventuras,\nyo vivo aventuras a tu lado,\nporque contigo todo es extraordinario." },
+            { "title": "Poema 65 — 12 de diciembre de 2025", "body": "Karina, eres luz que nunca se apaga,\nfaro divino en mi tormenta,\ny puerto seguro de mi alma." },
+            { "title": "Poema 66 — 13 de diciembre de 2025", "body": "Tu amor es semilla bendita,\nque Dios plantó en mi pecho,\ny que florece más cada día." },
+            { "title": "Poema 67 — 14 de diciembre de 2025", "body": "Como Marinette cose con cuidado,\nDios cosió nuestras almas juntas,\ncon puntadas de amor eterno." },
+            { "title": "Poema 68 — 15 de diciembre de 2025", "body": "En tus palabras encuentro sabiduría,\nen tu silencio hallo compañía,\ny en tu amor descubro propósito." },
+            { "title": "Poema 69 — 16 de diciembre de 2025", "body": "Dios pintó tu sonrisa,\ncon los colores del paraíso,\ny la colocó en mi horizonte." },
+            { "title": "Poema 70 — 17 de diciembre de 2025", "body": "Como Snoopy baila de alegría,\nmi corazón baila cuando te veo,\nal ritmo de la gracia divina." },
+            { "title": "Poema 71 — 18 de diciembre de 2025", "body": "Karina, eres el sí de Dios,\na todas mis oraciones calladas,\ny la respuesta que supera mis sueños." },
+            { "title": "Poema 72 — 19 de diciembre de 2025", "body": "Tu corazón es jardín celestial,\ndonde crecen flores de esperanza,\ny donde mi alma encuentra descanso." },
+            { "title": "Poema 73 — 20 de diciembre de 2025", "body": "Como Ladybug transforma lo oscuro,\ntu amor transforma mis heridas,\nen cicatrices llenas de luz." },
+            { "title": "Poema 74 — 21 de diciembre de 2025", "body": "Dios susurra promesas en el viento,\ny todas llevan tu nombre grabado,\nporque eres su regalo para mí." },
+            { "title": "Poema 75 — 22 de diciembre de 2025", "body": "En tus ojos veo mi futuro,\nescrito con tinta de estrellas,\ny sellado con amor divino." },
+            { "title": "Poema 76 — 23 de diciembre de 2025", "body": "Como Snoopy ama a Charlie Brown,\nte amo con lealtad eterna,\nque nace del alma y no se acaba." },
+            { "title": "Poema 77 — 24 de diciembre de 2025", "body": "Karina, eres villancico celestial,\nque suena en mi corazón,\nanunciando paz y amor eterno." },
+            { "title": "Poema 78 — 25 de diciembre de 2025", "body": "Hoy celebro tu amor como regalo,\nmás precioso que cualquier tesoro,\nporque es reflejo del amor de Dios." },
+            { "title": "Poema 79 — 26 de diciembre de 2025", "body": "Tu voz es melodía sagrada,\nque calma tempestades en mi mente,\ny trae serenidad a mi espíritu." },
+            { "title": "Poema 80 — 27 de diciembre de 2025", "body": "Como los miraculous eligen portadores,\nDios te eligió para mi vida,\ny yo te elijo cada día también." },
+            { "title": "Poema 81 — 28 de diciembre de 2025", "body": "Dios me enseñó a amar,\npero tú me enseñaste cómo,\ncon ejemplo vivo de tu corazón." },
+            { "title": "Poema 82 — 29 de diciembre de 2025", "body": "Snoopy escribe su novela,\nyo escribo nuestra historia,\ncon capítulos de fe y devoción." },
+            { "title": "Poema 83 — 30 de diciembre de 2025", "body": "Karina, eres el milagro cotidiano,\nque me recuerda que Dios existe,\ny que su amor es real y tangible." },
+            { "title": "Poema 84 — 31 de diciembre de 2025", "body": "Al cerrar este año te doy gracias,\npor cada risa, cada abrazo,\ny por ser mi compañera de vida." },
+            { "title": "Poema 85 — 1 de enero de 2026", "body": "Nuevo año, mismo amor infinito,\nque crece y se renueva,\ncon la bendición de Dios siempre." },
+            { "title": "Poema 86 — 2 de enero de 2026", "body": "Como Marinette enfrenta desafíos,\nenfrentamos juntos el futuro,\ncon fe como escudo y amor como espada." },
+            { "title": "Poema 87 — 3 de enero de 2026", "body": "Tu sonrisa ilumina mis mañanas,\ntu abrazo calienta mis noches,\ny tu amor sostiene mis días." },
+            { "title": "Poema 88 — 4 de enero de 2026", "body": "Dios te dio a mí como bendición,\ny me dio a ti como promesa,\nde amarte hasta el último suspiro." },
+            { "title": "Poema 89 — 5 de enero de 2026", "body": "Como Snoopy es fiel a su esencia,\nsoy fiel a este amor sagrado,\nque nace del cielo y vive en la tierra." },
+            { "title": "Poema 90 — 6 de enero de 2026", "body": "Karina, eres estrella que guía,\nmi camino en noches oscuras,\ny me recuerda que nunca estoy perdido." },
+            { "title": "Poema 91 — 7 de enero de 2026", "body": "En tus manos deposito mis miedos,\nen tu corazón encuentro valentía,\ny en tu amor hallo mi verdad." },
+            { "title": "Poema 92 — 8 de enero de 2026", "body": "Como Ladybug restaura París,\ntu amor restaura mi mundo,\ny lo llena de colores divinos." },
+            { "title": "Poema 93 — 9 de enero de 2026", "body": "Dios escribió tu nombre en mi destino,\ncon letras que nunca se borran,\nporque son eternas como su amor." },
+            { "title": "Poema 94 — 10 de enero de 2026", "body": "Tu risa es sacramento de alegría,\nque celebro cada día,\ncon gratitud infinita al cielo." },
+            { "title": "Poema 95 — 11 de enero de 2026", "body": "Como Snoopy encuentra felicidad,\nen cosas simples y hermosas,\nhallo mi felicidad completa en ti." },
+            { "title": "Poema 96 — 12 de enero de 2026", "body": "Karina, eres el verso final,\ndel poema que Dios comenzó,\ncuando decidió que yo existiera." },
+            { "title": "Poema 97 — 13 de enero de 2026", "body": "Tu amor es cáliz de gracia,\ndel que bebo cada mañana,\ny que nutre mi alma sedienta." },
+            { "title": "Poema 98 — 14 de enero de 2026", "body": "Como los miraculous protegen,\nprotejo cada momento contigo,\nen el altar sagrado de mi memoria." },
+            { "title": "Poema 99 — 15 de enero de 2026", "body": "Dios me dio vida para vivir,\npero tú me diste razones,\npara celebrar cada latido del corazón." },
+            { "title": "Poema 100 — 16 de enero de 2026", "body": "Karina, al llegar a cien días,\nsé que esto es solo el comienzo,\nde nuestro amor infinito y eterno." }
+        ];
+
+        // --- LÓGICA PRINCIPAL ---
+        const CORRECT_PASSWORD = 'Karina'; // Contraseña a usar
+        const START_DATE = new Date('2025-10-09T00:00:00'); // Fecha del Poema 1
+        
+        const lockScreen = document.getElementById('lockScreen');
+        const mainContent = document.getElementById('mainContent');
+        const unlockForm = document.getElementById('unlockForm');
+        const passwordInput = document.getElementById('passwordInput');
+        const errorMessage = document.getElementById('errorMessage');
+        
+        const currentPoemTitle = document.getElementById('currentPoemTitle');
+        const currentPoemBody = document.getElementById('currentPoemBody');
+        const poemNumberEl = document.getElementById('poemNumber');
+        const poemDateEl = document.getElementById('poemDate');
+        const heartsContainer = document.getElementById('heartsContainer');
+
+        /**
+         * Calcula y muestra el poema del día.
+         */
+        function loadDailyPoem() {
+            const today = new Date();
+            // Calcula la diferencia de días entre la fecha de inicio y hoy
+            const diffTime = Math.abs(today - START_DATE);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+            
+            // El índice del array es 'diffDays', ya que es base 0, 
+            // y queremos el día 1 (9/Oct) en el índice 0.
+            const poemIndex = diffDays; 
+
+            const poem = POEMS[poemIndex];
+
+            if (poem) {
+                // Formatea la fecha actual
+                const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                const formattedDate = today.toLocaleDateString('es-ES', options);
+
+                // Actualiza el contenido del poema
+                currentPoemTitle.textContent = poem.title;
+                currentPoemBody.textContent = poem.body;
+                poemNumberEl.textContent = poemIndex + 1;
+                poemDateEl.textContent = formattedDate;
+
+            } else {
+                // Mensaje si no hay poema para el día (ej. después del día 100)
+                currentPoemTitle.textContent = "¡Felicitaciones! Has llegado al final de la colección.";
+                currentPoemBody.textContent = "Pero nuestro amor continúa creciendo cada día.\nPor favor, espera la siguiente entrega o pide más poemas a la IA.";
+                poemNumberEl.textContent = '100+';
+                poemDateEl.textContent = today.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+            }
+        }
+        
+        /**
+         * Maneja el envío del formulario de contraseña.
+         */
+        unlockForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const inputPassword = passwordInput.value.trim();
+
+            if (inputPassword === CORRECT_PASSWORD) {
+                // Desbloqueo exitoso
+                errorMessage.textContent = '¡Bendición revelada!';
+                
+                // 1. Inicia la transición CSS de opacidad
+                lockScreen.classList.add('fade-out');
+
+                // 2. Espera a que termine la transición (1 segundo)
+                setTimeout(() => {
+                    lockScreen.style.display = 'none'; // Oculta completamente la pantalla
+                    mainContent.classList.remove('hidden'); // Muestra el contenido principal
+                    loadDailyPoem(); // Carga el poema
+                    startHeartAnimation(); // Inicia la lluvia de corazones
+                }, 1000); // 1000ms es la duración de la transición en CSS
+                
+            } else {
+                // Contraseña incorrecta
+                errorMessage.textContent = 'Clave incorrecta. Intenta de nuevo. (Pista: es su nombre)';
+                passwordInput.value = ''; // Limpia el campo
+                passwordInput.focus(); // Vuelve a enfocar
+            }
+        });
+
+        // --- LÓGICA DE CORAZONES FLOTANTES ---
+        const HEART_SYMBOLS = ['❤️', '💖', '✨', '🌹']; // Símbolos a usar
+
+        function createHeart() {
+            const heart = document.createElement('div');
+            heart.innerHTML = HEART_SYMBOLS[Math.floor(Math.random() * HEART_SYMBOLS.length)];
+            heart.classList.add('floating-heart');
+            
+            // Posición inicial aleatoria (horizontalmente)
+            const left = Math.random() * 100;
+            heart.style.left = `${left}vw`;
+
+            // Tamaño y color aleatorio
+            const size = Math.random() * 1.5 + 0.8; // 0.8rem a 2.3rem
+            heart.style.fontSize = `${size}rem`;
+            heart.style.color = `hsl(330, 80%, ${Math.random() * 20 + 70}%)`; // Rosa pastel
+            
+            // Duración de la animación (más lento para corazones grandes)
+            const duration = Math.random() * 10 + 10; // 10s a 20s
+            heart.style.animationDuration = `${duration}s`;
+            heart.style.animationDelay = `-${Math.random() * 5}s`; // Para que empiecen en diferentes posiciones Y
+            
+            heartsContainer.appendChild(heart);
+            
+            // Eliminar el corazón cuando termina su animación (para optimizar)
+            heart.addEventListener('animationend', () => {
+                heart.remove();
+            });
+        }
+
+        function startHeartAnimation() {
+            // Genera una ráfaga inicial de corazones
+            for (let i = 0; i < 20; i++) {
+                createHeart();
+            }
+            // Mantiene la generación de corazones
+            setInterval(createHeart, 800);
+        }
+    </script>
+
 </body>
 </html>
