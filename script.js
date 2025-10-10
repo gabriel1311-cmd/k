@@ -1,5 +1,5 @@
 // Contraseña correcta en binario
-const correctPassword = 'wood';
+const correctPassword = 'woodstock';
 const startDate = new Date('2025-10-09');
 
 // Elementos del DOM
@@ -23,6 +23,8 @@ function checkPassword() {
         mainContent.classList.add('active');
         loadPoem();
         createHearts();
+        // Actualizar el contador cada minuto
+        setInterval(loadPoem, 60000);
     } else {
         errorMessage.textContent = 'Parece que tu corazón aún no recuerda el código correcto 💫';
         passwordInput.value = '';
@@ -57,6 +59,20 @@ function createHearts() {
     }, 800);
 }
 
+// Calcular tiempo restante hasta el siguiente poema
+function getTimeUntilNext() {
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    
+    const diff = tomorrow - now;
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    
+    return { hours, minutes };
+}
+
 // Cargar poema del día
 async function loadPoem() {
     try {
@@ -73,15 +89,27 @@ async function loadPoem() {
             const currentPoem = poems[diffDays];
             poemTitle.textContent = currentPoem.title;
             poemBody.textContent = currentPoem.body;
-            poemCounter.textContent = `Poema ${diffDays + 1} de 100`;
+            
+            const remaining = poems.length - diffDays - 1;
+            const timeUntil = getTimeUntilNext();
+            
+            let counterText = `Poema ${diffDays + 1} de 100`;
+            if (remaining > 0) {
+                counterText += `\n✨ Faltan ${remaining} poemas por desbloquear ✨`;
+                counterText += `\n⏰ Próximo poema en ${timeUntil.hours} horas y ${timeUntil.minutes} minutos ⏰`;
+            } else {
+                counterText += `\n💖 Has completado todos los poemas 💖`;
+            }
+            
+            poemCounter.textContent = counterText;
             poemDisplay.style.display = 'block';
             lockedMessage.classList.remove('active');
         } else {
             const nextDate = new Date(startDate);
-            nextDate.setDate(nextDate.getDate() + diffDays + 1);
+            nextDate.setDate(nextDate.getDate() + poems.length);
             const options = { year: 'numeric', month: 'long', day: 'numeric' };
             const formattedDate = nextDate.toLocaleDateString('es-ES', options);
-            lockedMessage.textContent = `✨ El próximo poema se desbloqueará el ${formattedDate} ✨`;
+            lockedMessage.textContent = `✨ Todos los poemas han sido desbloqueados ✨\n💖 Gracias por estos 100 días de amor 💖`;
             lockedMessage.classList.add('active');
             poemDisplay.style.display = 'none';
         }
