@@ -1,5 +1,5 @@
 // Contraseña correcta en binario
-const correctPassword = '01110011 01101110 01101111 01101111 01110000 01111001';
+const correctPassword = 'sp';
 const startDate = new Date('2025-10-09');
 
 // Elementos del DOM
