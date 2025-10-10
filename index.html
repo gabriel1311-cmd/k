@@ -140,7 +140,7 @@
 
         /* Encabezado */
         .main-header {
-            padding: 3rem 1rem;
+            padding: 3rem 1rem 1rem; /* Ajustado el padding inferior */
             text-align: center;
         }
 
@@ -155,6 +155,14 @@
             50% { transform: scale(1.02); }
         }
 
+        /* Reloj y Contador */
+        .header-info {
+            color: #ff69b4;
+            font-size: 1rem;
+            margin-top: 1rem;
+            font-weight: bold;
+        }
+        
         /* Contenedor de corazones */
         .hearts-container {
             position: fixed;
@@ -320,6 +328,12 @@
 
         <header class="main-header">
             <h1 class="main-title">💌 Para mi Karina, con Amor Eterno 👑</h1>
+            <div class="header-info">
+                <span id="currentTime"></span> (Bogotá, Colombia)
+            </div>
+            <div class="header-info" style="font-style: italic; margin-top: 0.5rem;">
+                <span id="poemCounter"></span>
+            </div>
         </header>
 
         <section class="poem-container">
@@ -389,7 +403,7 @@
             { "title": "Poema 45 — 22 de noviembre de 2025", "body": "Tu voz es brisa celestial,\nque refresca mi espíritu cansado,\ny me recuerda que tengo hogar." },
             { "title": "Poema 46 — 23 de noviembre de 2025", "body": "Snoopy espera con paciencia,\nyo espero cada momento contigo,\nporque valen la eternidad." },
             { "title": "Poema 47 — 24 de noviembre de 2025", "body": "Karina, en ti descubrí,\nque el amor verdadero,\nes reflejo del amor de Dios." },
-            { "title": "Poema 48 — 25 de noviembre de 2025", "body": "Cada día a tu lado,\nes regalo divino que desenvuelvo,\ncon asombro y gratitud renovados." },
+            { "title": "Poema 48 — 25 de noviembre de 2ose 25", "body": "Cada día a tu lado,\nes regalo divino que desenvuelvo,\ncon asombro y gratitud renovados." },
             { "title": "Poema 49 — 26 de noviembre de 2025", "body": "Como Marinette protege París,\nprotejo nuestro amor con fe,\ncontra todo viento y marea." },
             { "title": "Poema 50 — 27 de noviembre de 2025", "body": "Tu sonrisa es amanecer,\nque rompe mi oscuridad,\ny anuncia días de gracia." },
             { "title": "Poema 51 — 28 de noviembre de 2025", "body": "Dios susurra tu nombre en mi oído,\ncuando necesito fortaleza,\nporque eres mi bendición constante." },
@@ -446,7 +460,7 @@
 
         // --- LÓGICA PRINCIPAL ---
         const CORRECT_PASSWORD = 'Karina'; // Contraseña a usar
-        const START_DATE = new Date('2025-10-09T00:00:00'); // Fecha del Poema 1
+        const STORAGE_KEY_START_DATE = 'poemStartDate'; // Clave para guardar el día de inicio
         
         const lockScreen = document.getElementById('lockScreen');
         const mainContent = document.getElementById('mainContent');
@@ -459,39 +473,83 @@
         const poemNumberEl = document.getElementById('poemNumber');
         const poemDateEl = document.getElementById('poemDate');
         const heartsContainer = document.getElementById('heartsContainer');
+        const poemCounterEl = document.getElementById('poemCounter');
+        const currentTimeEl = document.getElementById('currentTime');
 
         /**
-         * Calcula y muestra el poema del día.
+         * Inicializa la fecha de inicio si no existe (la primera vez que se abre).
+         */
+        function initializeStartDate() {
+            if (!localStorage.getItem(STORAGE_KEY_START_DATE)) {
+                // Guarda la fecha actual (solo la parte de la fecha, sin hora) como inicio
+                const today = new Date();
+                today.setHours(0, 0, 0, 0); // Establecer la hora a medianoche para cálculo de días
+                localStorage.setItem(STORAGE_KEY_START_DATE, today.getTime());
+            }
+        }
+
+        /**
+         * Calcula y muestra el poema del día y el contador.
          */
         function loadDailyPoem() {
+            initializeStartDate();
+            const startDateTimestamp = parseInt(localStorage.getItem(STORAGE_KEY_START_DATE));
+            const startDate = new Date(startDateTimestamp);
+
             const today = new Date();
-            // Calcula la diferencia de días entre la fecha de inicio y hoy
-            const diffTime = Math.abs(today - START_DATE);
+            today.setHours(0, 0, 0, 0); // Comparar solo la fecha, no la hora
+
+            // Cálculo del día actual (Poema 1 es el día 0, Poema 2 es el día 1, etc.)
+            const diffTime = Math.abs(today - startDate);
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
             
-            // El índice del array es 'diffDays', ya que es base 0, 
-            // y queremos el día 1 (9/Oct) en el índice 0.
             const poemIndex = diffDays; 
+            const poemNumber = diffDays + 1; // Número de poema (ej. 1, 2, 3...)
 
             const poem = POEMS[poemIndex];
-
+            
+            // --- Cargar Contenido del Poema ---
             if (poem) {
-                // Formatea la fecha actual
                 const options = { year: 'numeric', month: 'long', day: 'numeric' };
                 const formattedDate = today.toLocaleDateString('es-ES', options);
 
-                // Actualiza el contenido del poema
                 currentPoemTitle.textContent = poem.title;
                 currentPoemBody.textContent = poem.body;
-                poemNumberEl.textContent = poemIndex + 1;
+                poemNumberEl.textContent = poemNumber;
                 poemDateEl.textContent = formattedDate;
 
+                // --- Cargar Contador de Tiempo ---
+                const tomorrow = new Date(today);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                tomorrow.setHours(0, 0, 0, 0); 
+                
+                const updateCounter = () => {
+                    const now = new Date();
+                    const timeLeft = tomorrow - now;
+                    
+                    if (timeLeft > 0) {
+                        const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+                        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+                        poemCounterEl.innerHTML = `¡Hoy es el **Día ${poemNumber}**! Quedan ${hours}h ${minutes}m ${seconds}s para el **Poema ${poemNumber + 1}**`;
+                    } else {
+                        // Si el tiempo ha expirado, forzar una recarga para el nuevo poema
+                        poemCounterEl.textContent = `¡Poema ${poemNumber + 1} listo! ¡Recarga la página!`;
+                        clearInterval(counterInterval);
+                    }
+                };
+
+                const counterInterval = setInterval(updateCounter, 1000);
+                updateCounter(); // Ejecutar inmediatamente
+
             } else {
-                // Mensaje si no hay poema para el día (ej. después del día 100)
+                // Mensaje si no hay poema (después del día 100)
                 currentPoemTitle.textContent = "¡Felicitaciones! Has llegado al final de la colección.";
-                currentPoemBody.textContent = "Pero nuestro amor continúa creciendo cada día.\nPor favor, espera la siguiente entrega o pide más poemas a la IA.";
+                currentPoemBody.textContent = "Pero nuestro amor continúa creciendo cada día.\nPor favor, espera la siguiente entrega de poemas.";
                 poemNumberEl.textContent = '100+';
                 poemDateEl.textContent = today.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+                poemCounterEl.textContent = ""; // No mostrar contador
             }
         }
         
@@ -503,64 +561,89 @@
             const inputPassword = passwordInput.value.trim();
 
             if (inputPassword === CORRECT_PASSWORD) {
-                // Desbloqueo exitoso
                 errorMessage.textContent = '¡Bendición revelada!';
                 
-                // 1. Inicia la transición CSS de opacidad
                 lockScreen.classList.add('fade-out');
 
-                // 2. Espera a que termine la transición (1 segundo)
                 setTimeout(() => {
-                    lockScreen.style.display = 'none'; // Oculta completamente la pantalla
-                    mainContent.classList.remove('hidden'); // Muestra el contenido principal
-                    loadDailyPoem(); // Carga el poema
+                    lockScreen.style.display = 'none'; 
+                    mainContent.classList.remove('hidden'); 
+                    loadDailyPoem(); // Carga el poema del día
+                    startClock(); // Inicia el reloj de Bogotá
                     startHeartAnimation(); // Inicia la lluvia de corazones
-                }, 1000); // 1000ms es la duración de la transición en CSS
+                }, 1000); 
                 
             } else {
-                // Contraseña incorrecta
                 errorMessage.textContent = 'Clave incorrecta. Intenta de nuevo. (Pista: es su nombre)';
-                passwordInput.value = ''; // Limpia el campo
-                passwordInput.focus(); // Vuelve a enfocar
+                passwordInput.value = ''; 
+                passwordInput.focus(); 
             }
         });
 
-        // --- LÓGICA DE CORAZONES FLOTANTES ---
-        const HEART_SYMBOLS = ['❤️', '💖', '✨', '🌹']; // Símbolos a usar
+        // --- LÓGICA DEL RELOJ DE BOGOTÁ ---
+        function startClock() {
+            const updateClock = () => {
+                const now = new Date();
+                
+                // Formato de hora en GMT-5 (Bogotá)
+                const timeOptions = { 
+                    hour: '2-digit', 
+                    minute: '2-digit', 
+                    second: '2-digit',
+                    hour12: true,
+                    timeZone: 'America/Bogota' 
+                };
+                
+                // Formato de fecha
+                const dateOptions = { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric',
+                    timeZone: 'America/Bogota'
+                };
+
+                const timeString = now.toLocaleTimeString('es-CO', timeOptions);
+                const dateString = now.toLocaleDateString('es-CO', dateOptions);
+
+                currentTimeEl.innerHTML = `${dateString} | ${timeString}`;
+            };
+
+            updateClock();
+            setInterval(updateClock, 1000); // Actualiza cada segundo
+        }
+
+
+        // --- LÓGICA DE CORAZONES FLOTANTES (Sin cambios) ---
+        const HEART_SYMBOLS = ['❤️', '💖', '✨', '🌹']; 
 
         function createHeart() {
             const heart = document.createElement('div');
             heart.innerHTML = HEART_SYMBOLS[Math.floor(Math.random() * HEART_SYMBOLS.length)];
             heart.classList.add('floating-heart');
             
-            // Posición inicial aleatoria (horizontalmente)
             const left = Math.random() * 100;
             heart.style.left = `${left}vw`;
 
-            // Tamaño y color aleatorio
-            const size = Math.random() * 1.5 + 0.8; // 0.8rem a 2.3rem
+            const size = Math.random() * 1.5 + 0.8; 
             heart.style.fontSize = `${size}rem`;
-            heart.style.color = `hsl(330, 80%, ${Math.random() * 20 + 70}%)`; // Rosa pastel
+            heart.style.color = `hsl(330, 80%, ${Math.random() * 20 + 70}%)`; 
             
-            // Duración de la animación (más lento para corazones grandes)
-            const duration = Math.random() * 10 + 10; // 10s a 20s
+            const duration = Math.random() * 10 + 10; 
             heart.style.animationDuration = `${duration}s`;
-            heart.style.animationDelay = `-${Math.random() * 5}s`; // Para que empiecen en diferentes posiciones Y
+            heart.style.animationDelay = `-${Math.random() * 5}s`; 
             
             heartsContainer.appendChild(heart);
             
-            // Eliminar el corazón cuando termina su animación (para optimizar)
             heart.addEventListener('animationend', () => {
                 heart.remove();
             });
         }
 
         function startHeartAnimation() {
-            // Genera una ráfaga inicial de corazones
             for (let i = 0; i < 20; i++) {
                 createHeart();
             }
-            // Mantiene la generación de corazones
             setInterval(createHeart, 800);
         }
     </script>
