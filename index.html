@@ -47,10 +47,35 @@
 
     <div class="grid" id="grid"></div>
 
-
+    <footer>
+      <p class="small">Nota: esto es protección *del lado del cliente* — no es segura contra quienes saben inspeccionar código. Para seguridad real usa un backend o servicios con autenticación (Netlify, Cloudflare Access, etc.).</p>
+    </footer>
   </div>
 
-  <!-- Modal contraseña -->
+  <!-- Splash pantalla inicial -->
+  <div id="splash" class="modal" style="display:flex;background:#000;color:#0fefc1;">
+    <div class="modal-card" style="background:transparent;box-shadow:none;border-radius:8px;text-align:center;max-width:640px">
+      <pre style="font-family:monospace;font-size:16px;line-height:1;letter-spacing:1px;margin:0"> 
+  _  _  _____  ____  ____  _     _  ____  _  _  ____  _____  __  __  
+ | \| ||_   _||  _ \|  _ \| |   | |/ ___|| \| ||  _ \|_   _||  \/  | 
+ | . ` |  | |  | |_) | |_) | |   | |\___ \| . ` || |_) | | |  | |\/| | 
+ | |\  |  | |  |  _ <|  _ <| |___| | ___) | |\  ||  _ <  | |  | |  | | 
+ |_| \_|  |_|  |_| \_\_| \_\_____|_||____/|_| \_||_| \_\ |_|  |_|  |_| 
+      </pre>
+      <p style="color:#ffd6ea;margin-top:14px;font-weight:700">DESBLOQUEAME</p>
+      <p style="color:#ffb3c6;margin-top:6px">Ingresa el código único para entrar:</p>
+      <pre style="background:rgba(255,255,255,0.03);padding:10px;border-radius:8px;color:#fff;font-family:monospace">
+011100110110111001101111011011110111000001111001
+      </pre>
+      <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
+        <input id="splash-pw" type="password" placeholder="Código binario" style="padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:#fff;width:260px;text-align:center" />
+        <button id="splash-enter" style="padding:10px 14px;border-radius:8px;border:0;background:#ff6b81;color:#fff;cursor:pointer">Entrar</button>
+      </div>
+      <p id="splash-err" style="display:none;color:#ffb4b4;margin-top:8px">Código incorrecto.</p>
+    </div>
+  </div>
+
+  <!-- Modal contraseña (aparece al abrir un poema) -->
   <div id="pw-modal" class="modal" style="display:none">
     <div class="modal-card">
       <h3>Introduce la contraseña</h3>
@@ -66,6 +91,18 @@
   </div>
 
   <!-- Poema modal -->
+  <div id="poem-modal" class="modal" style="display:none">
+    <div class="modal-card" style="max-height:80vh;overflow:auto">
+      <h3 id="poem-title">Poema</h3>
+      <div id="poem-body" class="poem-full"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px">
+        <div class="meta" id="poem-meta"></div>
+        <div>
+          <button id="close-poem">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
   <div id="poem-modal" class="modal" style="display:none">
     <div class="modal-card" style="max-height:80vh;overflow:auto">
       <h3 id="poem-title">Poema</h3>
@@ -151,15 +188,43 @@ async function requirePassword() {
   });
 }
 
-function computeUnlocked(startTs) {
-  if (!startTs) return 0;
-  const now = Date.now();
-  const delta = now - startTs;
-  const n = Math.floor(delta / INTERVAL_MS) + 1; // +1 para desbloquear el primero inmediatamente
-  return Math.min(TOTAL_POEMS, Math.max(0, n));
+function computeUnlocked() {
+  // calculamos cuántos poemas están desbloqueados con fechas fijas: día 1 = 9 oct 2025
+  const base = new Date(Date.UTC(2025, 9, 9)); // months 0-indexed -> 9 = octubre
+  const now = new Date();
+  // normalize to local date (ignore time)
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  let count = 0;
+  for (let i = 0; i < TOTAL_POEMS; i++) {
+    const d = new Date(base);
+    d.setDate(d.getDate() + i);
+    // compare dates ignoring time
+    const dLocal = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    if (today >= dLocal) count++;
+  }
+  return count;
 }
 
-function renderGrid() {
+function formatDateSpanish(date){
+  const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  return `${date.getDate()} de ${months[date.getMonth()]} de ${date.getFullYear()}`;
+}
+
+function updateStatus() {
+  const base = new Date(Date.UTC(2025, 9, 9));
+  const now = new Date();
+  const unlocked = computeUnlocked();
+  if (unlocked >= TOTAL_POEMS) {
+    status.textContent = `¡Todos los poemas (${TOTAL_POEMS}) están desbloqueados!`;
+    return;
+  }
+  const nextIdx = unlocked + 1;
+  const nextDate = new Date(base);
+  nextDate.setDate(nextDate.getDate() + (nextIdx - 1));
+  status.textContent = `Desbloqueados: ${unlocked} / ${TOTAL_POEMS}. Siguiente (poema ${nextIdx}) se desbloquea el ${formatDateSpanish(nextDate)}.`;
+}
+
+function renderGrid()() {
   grid.innerHTML = '';
   for (let i=0;i<TOTAL_POEMS;i++){
     const idx = i+1;
@@ -173,7 +238,15 @@ function renderGrid() {
     btn.onclick = ()=>onOpenPoem(idx-1);
     const meta = document.createElement('div');
     meta.className = 'meta';
-    meta.textContent = unlocked ? 'Desbloqueado' : 'Se desbloquea en X horas';
+    if (unlocked) {
+      meta.textContent = 'Desbloqueado';
+    } else {
+      const base = new Date(Date.UTC(2025, 9, 9));
+      const unlockDate = new Date(base);
+      unlockDate.setDate(unlockDate.getDate() + i);
+      const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+      meta.textContent = `Se desbloquea el ${unlockDate.getDate()} de ${months[unlockDate.getMonth()]} de ${unlockDate.getFullYear()}`;
+    }
     card.appendChild(title);
     card.appendChild(document.createElement('br'));
     card.appendChild(btn);
@@ -221,31 +294,10 @@ closePoem.onclick = ()=>{ poemModal.style.display='none'; };
     // asegurar length
     while (poems.length < TOTAL_POEMS) poems.push({title:`Poema #${poems.length+1}`, body:'(vacío)'});
 
-    // check if start ts exists
-    let startTs = getStartTs();
-    if (!startTs) {
-      // todavía no comenzó — solicitamos contraseña para iniciar cuando quiera
-      status.textContent = 'Se requiere contraseña para iniciar la secuencia de desbloqueo. Pulsa "Entrar".';
-      // show button to start
-      const startBtn = document.createElement('button');
-      startBtn.textContent = 'Entrar';
-      startBtn.onclick = async ()=>{
-        const ok = await requirePassword();
-        if (!ok) return;
-        const now = Date.now();
-        setStartTs(now);
-        startTs = now;
-        unlockedCount = computeUnlocked(startTs);
-        renderGrid();
-        updateStatus(startTs);
-      };
-      grid.appendChild(startBtn);
-      return;
-    }
-
-    unlockedCount = computeUnlocked(startTs);
+    // calcular desbloqueados según fechas fijas
+    unlockedCount = computeUnlocked();
     renderGrid();
-    updateStatus(startTs);
+    updateStatus();
   } catch (err) {
     status.textContent = 'Error al cargar.';
     console.error(err);
@@ -276,6 +328,20 @@ window.addEventListener('keydown',(e)=>{
     container.appendChild(h);
   }
 })();
+
+// Splash handlers
+document.getElementById('splash-enter').onclick = async function(){
+  const v = document.getElementById('splash-pw').value || '';
+  const h = await sha256Hex(v);
+  if (h === PASSWORD_HASH) {
+    document.getElementById('splash').style.display = 'none';
+  } else {
+    document.getElementById('splash-err').style.display = 'block';
+  }
+};
+
+// allow Enter key on splash
+document.getElementById('splash-pw').addEventListener('keydown', function(e){ if(e.key==='Enter') document.getElementById('splash-enter').click(); });
 
 
 </script>
