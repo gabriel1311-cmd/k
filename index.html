@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>100 Poemas — Protegido</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#ffd166;--muted:#94a3b8}
+    html,body{height:100%;margin:0;font-family:Inter, system-ui, Arial;background:linear-gradient(180deg,#071226 0%, #07142a 100%);color:#e6eef8}
+    .wrap{max-width:980px;margin:36px auto;padding:24px}
+    header{display:flex;align-items:center;gap:16px}
+    h1{margin:0;font-size:28px}
+    p.lead{margin:6px 0;color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:18px}
+    .card{background:var(--card);padding:14px;border-radius:12px;box-shadow:0 6px 18px rgba(2,6,23,.6)}
+    .locked{opacity:.36}
+    .meta{font-size:12px;color:var(--muted);margin-top:8px}
+    button{background:transparent;border:1px solid rgba(255,255,255,.06);padding:8px 10px;border-radius:8px;color:inherit;cursor:pointer}
+    .modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(2,6,23,.6)}
+    .modal-card{width:520px;background:linear-gradient(180deg,#041025,#071226);padding:20px;border-radius:12px;box-shadow:0 10px 40px rgba(2,6,23,.7)}
+    label{display:block;margin:10px 0 6px}
+    input[type=text], input[type=password]{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,.06);background:transparent;color:inherit}
+    footer{margin-top:24px;color:var(--muted);font-size:13px}
+    .poem-full{white-space:pre-wrap;font-size:14px;line-height:1.5}
+    .small{font-size:12px;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>100 Poemas — Página protegida</h1>
+        <p class="lead">Cada poema se desbloquea 1 cada 24 horas desde tu primera entrada correcta. Se pedirá contraseña cada vez que visites.</p>
+      </div>
+    </header>
+
+    <div id="status" class="small">Cargando…</div>
+
+    <div class="grid" id="grid"></div>
+
+    <footer>
+      <p class="small">Nota: esto es protección *del lado del cliente* — no es segura contra quienes saben inspeccionar código. Para seguridad real usa un backend o servicios con autenticación (Netlify, Cloudflare Access, etc.).</p>
+    </footer>
+  </div>
+
+  <!-- Modal contraseña -->
+  <div id="pw-modal" class="modal" style="display:none">
+    <div class="modal-card">
+      <h3>Introduce la contraseña</h3>
+      <p class="small">La contraseña se verifica localmente. Se te pedirá cada vez que abras la página.</p>
+      <label for="pw">Contraseña</label>
+      <input id="pw" type="password" autocomplete="off" />
+      <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end">
+        <button id="btn-cancel">Cancelar</button>
+        <button id="btn-ok">Entrar</button>
+      </div>
+      <p id="pw-err" class="small" style="color:#ffb4b4;margin-top:10px;display:none">Contraseña incorrecta.</p>
+    </div>
+  </div>
+
+  <!-- Poema modal -->
+  <div id="poem-modal" class="modal" style="display:none">
+    <div class="modal-card" style="max-height:80vh;overflow:auto">
+      <h3 id="poem-title">Poema</h3>
+      <div id="poem-body" class="poem-full"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px">
+        <div class="meta" id="poem-meta"></div>
+        <div>
+          <button id="close-poem">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+// -------- CONFIGURACIÓN (edítala) --------
+// 1) Establece aquí el HASH_SHA256 de la contraseña que quieras usar (hex en minúsculas).
+//    Para generar el hash localmente en Linux/macOS: echo -n 'mi-contraseña' | sha256sum
+//    (Si no quieres exponer la contraseña en el repo, puedes cambiar este flujo y validar en un servidor.)
+const PASSWORD_HASH = '2bc95ee0a3535bcd36674f727e9b9be1e3351de18f3eb2604389bee14b37b410';
+// 2) Duración entre desbloqueos (ms). 24 horas = 86400000
+const INTERVAL_MS = 24 * 60 * 60 * 1000;
+// 3) Número total de poemas que tendrá la web (asegúrate que coincida con tu archivo poems.json si lo usas)
+const TOTAL_POEMS = 100;
+// ------------------------------------------
+
+// Helper: SHA-256 con Web Crypto -> devuelve hex lowercase
+async function sha256Hex(str) {
+  const enc = new TextEncoder();
+  const data = enc.encode(str);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  const arr = Array.from(new Uint8Array(hash));
+  return arr.map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// Intentaremos cargar poems.json (opcional). Si no existe, usamos generadores de ejemplo.
+async function loadPoems() {
+  try {
+    const r = await fetch('poems.json', {cache: 'no-store'});
+    if (!r.ok) throw new Error('no json');
+    const json = await r.json();
+    if (!Array.isArray(json)) throw new Error('json no es array');
+    return json.slice(0, TOTAL_POEMS);
+  } catch (e) {
+    // generar marcadores
+    const arr = [];
+    for (let i=1;i<=TOTAL_POEMS;i++) arr.push({title:`Poema #${i}`, body:`Este es el poema de ejemplo número ${i}.\n\nReemplaza poems.json con tus poemas reales.`});
+    return arr;
+  }
+}
+
+// Guardar/leer timestamp inicial en localStorage por usuario
+function getStartTs() {return Number(localStorage.getItem('poems_start_ts')||0)}
+function setStartTs(ts){localStorage.setItem('poems_start_ts', String(ts))}
+
+// UI
+const grid = document.getElementById('grid');
+const status = document.getElementById('status');
+const modal = document.getElementById('pw-modal');
+const poemModal = document.getElementById('poem-modal');
+const pwInput = document.getElementById('pw');
+const btnOk = document.getElementById('btn-ok');
+const btnCancel = document.getElementById('btn-cancel');
+const pwErr = document.getElementById('pw-err');
+const poemTitle = document.getElementById('poem-title');
+const poemBody = document.getElementById('poem-body');
+const poemMeta = document.getElementById('poem-meta');
+const closePoem = document.getElementById('close-poem');
+
+let poems = [];
+let unlockedCount = 0;
+let authedThisVisit = false;
+
+async function requirePassword() {
+  modal.style.display = 'flex';
+  pwInput.value = '';
+  pwErr.style.display = 'none';
+  pwInput.focus();
+  return new Promise((resolve)=>{
+    btnCancel.onclick = ()=>{ modal.style.display='none'; resolve(false); };
+    btnOk.onclick = async ()=>{
+      const val = pwInput.value || '';
+      const h = await sha256Hex(val);
+      if (h === PASSWORD_HASH) {
+        modal.style.display='none';
+        authedThisVisit = true;
+        resolve(true);
+      } else {
+        pwErr.style.display='block';
+        resolve(false);
+      }
+    };
+  });
+}
+
+function computeUnlocked(startTs) {
+  if (!startTs) return 0;
+  const now = Date.now();
+  const delta = now - startTs;
+  const n = Math.floor(delta / INTERVAL_MS) + 1; // +1 para desbloquear el primero inmediatamente
+  return Math.min(TOTAL_POEMS, Math.max(0, n));
+}
+
+function renderGrid() {
+  grid.innerHTML = '';
+  for (let i=0;i<TOTAL_POEMS;i++){
+    const idx = i+1;
+    const unlocked = i < unlockedCount;
+    const card = document.createElement('div');
+    card.className = 'card' + (unlocked? '':' locked');
+    const title = document.createElement('div');
+    title.textContent = poems[i] && poems[i].title ? poems[i].title : `Poema #${idx}`;
+    const btn = document.createElement('button');
+    btn.textContent = unlocked ? 'Leer' : 'Bloqueado';
+    btn.onclick = ()=>onOpenPoem(idx-1);
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+    meta.textContent = unlocked ? 'Desbloqueado' : 'Se desbloquea en X horas';
+    card.appendChild(title);
+    card.appendChild(document.createElement('br'));
+    card.appendChild(btn);
+    card.appendChild(meta);
+    grid.appendChild(card);
+  }
+}
+
+function updateStatus(startTs) {
+  const now = Date.now();
+  if (!startTs) {
+    status.textContent = 'Aún no comenzaste. Al entrar con la contraseña por primera vez se iniciará la cuenta y se desbloqueará el primer poema.';
+    return;
+  }
+  const nextIdx = unlockedCount + 1;
+  if (unlockedCount >= TOTAL_POEMS) {
+    status.textContent = `¡Todos los poemas (${TOTAL_POEMS}) están desbloqueados!`;
+    return;
+  }
+  const nextUnlockAt = startTs + (unlockedCount) * INTERVAL_MS; // unlockedCount ya es número desbloqueado
+  const msLeft = nextUnlockAt - now;
+  const hours = Math.max(0, Math.floor(msLeft / (1000*60*60)));
+  const mins = Math.max(0, Math.floor((msLeft % (1000*60*60)) / (1000*60)));
+  status.textContent = `Desbloqueados: ${unlockedCount} / ${TOTAL_POEMS}. Siguiente (poema ${nextIdx}) en aprox. ${hours}h ${mins}m.`;
+}
+
+async function onOpenPoem(index) {
+  if (index >= unlockedCount) return; // no abrir
+  // pedir contraseña cada vez
+  const ok = await requirePassword();
+  if (!ok) return;
+  // mostrar poema
+  const p = poems[index] || {title:`Poema #${index+1}`, body:'(vacío)'};
+  poemTitle.textContent = p.title || `Poema #${index+1}`;
+  poemBody.textContent = p.body || '';
+  poemMeta.textContent = `Poema ${index+1} — ${unlockedCount} desbloqueados`;
+  poemModal.style.display = 'flex';
+}
+closePoem.onclick = ()=>{ poemModal.style.display='none'; };
+
+// Inicialización
+(async ()=>{
+  try {
+    poems = await loadPoems();
+    // asegurar length
+    while (poems.length < TOTAL_POEMS) poems.push({title:`Poema #${poems.length+1}`, body:'(vacío)'});
+
+    // check if start ts exists
+    let startTs = getStartTs();
+    if (!startTs) {
+      // todavía no comenzó — solicitamos contraseña para iniciar cuando quiera
+      status.textContent = 'Se requiere contraseña para iniciar la secuencia de desbloqueo. Pulsa "Entrar".';
+      // show button to start
+      const startBtn = document.createElement('button');
+      startBtn.textContent = 'Entrar';
+      startBtn.onclick = async ()=>{
+        const ok = await requirePassword();
+        if (!ok) return;
+        const now = Date.now();
+        setStartTs(now);
+        startTs = now;
+        unlockedCount = computeUnlocked(startTs);
+        renderGrid();
+        updateStatus(startTs);
+      };
+      grid.appendChild(startBtn);
+      return;
+    }
+
+    unlockedCount = computeUnlocked(startTs);
+    renderGrid();
+    updateStatus(startTs);
+  } catch (err) {
+    status.textContent = 'Error al cargar.';
+    console.error(err);
+  }
+})();
+
+// cerrar modales con ESC
+window.addEventListener('keydown',(e)=>{
+  if (e.key==='Escape'){
+    if (modal.style.display==='flex') modal.style.display='none';
+    if (poemModal.style.display==='flex') poemModal.style.display='none';
+  }
+});
+
+</script>
+
+<!-- INSTRUCCIONES (no editarlas si no sabes lo que haces):
+  1) Genera el hash de la contraseña y reemplaza PASSWORD_HASH.
+     - Linux/macOS: echo -n 'tu-contraseña' | sha256sum
+     - Windows (PowerShell): -NoNewline echo -n 'tu-contraseña' | shasum -a 256
+  2) (Opcional) Crea un archivo poems.json en el mismo repo con un array JSON:
+     [ {"title":"Mi poema","body":"Línea1\nLínea2"}, ... ]
+     Asegúrate que tenga al menos 100 entradas o ajusta TOTAL_POEMS.
+  3) Sube este archivo (y poems.json si lo usas) al repositorio y habilita GitHub Pages en la rama main (o gh-pages).
+  4) Limitación de seguridad: GitHub Pages es estático. Cualquiera puede ver el código fuente y el hash; la contraseña se puede adivinar por fuerza bruta si es débil. Para seguridad real, usa un backend o un servicio con autenticación.
+  5) Si quieres, puedo ayudarte a:
+     - Generar 100 poemas de ejemplo
+     - Crear poems.json preparado para subir
+     - Hacer un flujo más seguro con Netlify Functions / Cloudflare Access
+-->
+</body>
+</html>
