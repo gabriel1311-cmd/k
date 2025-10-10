@@ -6,7 +6,15 @@
   <title>100 Poemas — Protegido</title>
   <style>
     :root{--bg:#0f1724;--card:#0b1220;--accent:#ffd166;--muted:#94a3b8}
-    html,body{height:100%;margin:0;font-family:Inter, system-ui, Arial;background:linear-gradient(180deg,#071226 0%, #07142a 100%);color:#e6eef8}
+    html,body{height:100%;margin:0;font-family:Inter, system-ui, Arial;background:linear-gradient(180deg,#ffeef0 0%, #fff0f6 100%);color:#2b2b2b}
+    /* fondo de corazones animados */
+    .hearts{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+    .heart{position:absolute;bottom:-10%;width:24px;height:24px;background:radial-gradient(circle at 30% 30%, #fff, transparent 30%),linear-gradient(45deg,#ff6b81,#ffb3c6);transform:rotate(-45deg);border-radius:4px;opacity:.9;animation:rise 12s linear infinite}
+    @keyframes rise{0%{transform:translateY(0) rotate(-45deg) scale(.6);opacity:.9}50%{opacity:.7}100%{transform:translateY(-130vh) rotate(-45deg) scale(1);opacity:0}}
+    .heart::before,.heart::after{content:'';position:absolute;width:24px;height:24px;background:inherit;border-radius:50%}
+    .heart::before{top:-12px;left:0}
+    .heart::after{left:12px;top:0}
+
     .wrap{max-width:980px;margin:36px auto;padding:24px}
     header{display:flex;align-items:center;gap:16px}
     h1{margin:0;font-size:28px}
@@ -26,10 +34,11 @@
   </style>
 </head>
 <body>
+  <div class="hearts" id="hearts"></div>
   <div class="wrap">
     <header>
       <div>
-        <h1>100 Poemas — Página protegida</h1>
+        <h1>100 Poemas para Karina — Protegido</h1>
         <p class="lead">Cada poema se desbloquea 1 cada 24 horas desde tu primera entrada correcta. Se pedirá contraseña cada vez que visites.</p>
       </div>
     </header>
@@ -93,20 +102,11 @@ async function sha256Hex(str) {
   return arr.map(b => b.toString(16).padStart(2,'0')).join('');
 }
 
-// Intentaremos cargar poems.json (opcional). Si no existe, usamos generadores de ejemplo.
+// Cargamos los poemas embebidos (generados) — 100 entradas, desde 9 de octubre de 2025
+const POEMS = "+json_str}]};
 async function loadPoems() {
-  try {
-    const r = await fetch('poems.json', {cache: 'no-store'});
-    if (!r.ok) throw new Error('no json');
-    const json = await r.json();
-    if (!Array.isArray(json)) throw new Error('json no es array');
-    return json.slice(0, TOTAL_POEMS);
-  } catch (e) {
-    // generar marcadores
-    const arr = [];
-    for (let i=1;i<=TOTAL_POEMS;i++) arr.push({title:`Poema #${i}`, body:`Este es el poema de ejemplo número ${i}.\n\nReemplaza poems.json con tus poemas reales.`});
-    return arr;
-  }
+  // devolvemos una promesa para mantener la API anterior
+  return Promise.resolve(POEMS.slice(0, TOTAL_POEMS));
 }
 
 // Guardar/leer timestamp inicial en localStorage por usuario
@@ -261,6 +261,24 @@ window.addEventListener('keydown',(e)=>{
     if (poemModal.style.display==='flex') poemModal.style.display='none';
   }
 });
+
+// Generador de corazones decorativos
+(function createHearts(){
+  const container = document.getElementById('hearts');
+  const count = 22;
+  for(let i=0;i<count;i++){
+    const h = document.createElement('div');
+    h.className='heart';
+    h.style.left = Math.random()*100+'%';
+    h.style.width = (12+Math.random()*36)+'px';
+    h.style.height = h.style.width;
+    h.style.animationDuration = (8+Math.random()*10)+'s';
+    h.style.opacity = 0.6 + Math.random()*0.4;
+    h.style.bottom = -(10+Math.random()*50)+'%';
+    container.appendChild(h);
+  }
+})();
+
 
 </script>
 
