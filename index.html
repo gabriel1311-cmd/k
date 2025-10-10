@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Para Karina de gabo</title>
+    <title>Para Karina — Un Poema Diario</title>
     <style>
         * {
             margin: 0;
@@ -307,16 +307,16 @@
     <div id="lockScreen" class="lock-screen">
         <div class="lock-container">
             <pre class="ascii-art">
-               _  _  _  
-              | K | G |
-                ¯  ¯ ¯  
-                 / \
-                | ♡ |
-                 \ /
+  _  _  _  _  _  _  _  _  _  _
+ | K | A | R | I | N | A | | L | O | V | E |
+  ¯  ¯  ¯  ¯  ¯  ¯  ¯  ¯  ¯  ¯
+                  / \
+                 | ♡ |
+                  \ /
             </pre>
             <form id="unlockForm" class="unlock-form">
                 <input type="password" id="passwordInput" class="password-input" placeholder="Ingresa la palabra mágica..." required>
-                <button type="submit" class="unlock-btn">DESBLOQUEAME!!</button>
+                <button type="submit" class="unlock-btn">DESBLOQUEAR BENDICIÓN</button>
                 <p id="errorMessage" class="error-message"></p>
             </form>
         </div>
@@ -403,7 +403,7 @@
             { "title": "Poema 45 — 22 de noviembre de 2025", "body": "Tu voz es brisa celestial,\nque refresca mi espíritu cansado,\ny me recuerda que tengo hogar." },
             { "title": "Poema 46 — 23 de noviembre de 2025", "body": "Snoopy espera con paciencia,\nyo espero cada momento contigo,\nporque valen la eternidad." },
             { "title": "Poema 47 — 24 de noviembre de 2025", "body": "Karina, en ti descubrí,\nque el amor verdadero,\nes reflejo del amor de Dios." },
-            { "title": "Poema 48 — 25 de noviembre de 2ose 25", "body": "Cada día a tu lado,\nes regalo divino que desenvuelvo,\ncon asombro y gratitud renovados." },
+            { "title": "Poema 48 — 25 de noviembre de 2025", "body": "Cada día a tu lado,\nes regalo divino que desenvuelvo,\ncon asombro y gratitud renovados." },
             { "title": "Poema 49 — 26 de noviembre de 2025", "body": "Como Marinette protege París,\nprotejo nuestro amor con fe,\ncontra todo viento y marea." },
             { "title": "Poema 50 — 27 de noviembre de 2025", "body": "Tu sonrisa es amanecer,\nque rompe mi oscuridad,\ny anuncia días de gracia." },
             { "title": "Poema 51 — 28 de noviembre de 2025", "body": "Dios susurra tu nombre en mi oído,\ncuando necesito fortaleza,\nporque eres mi bendición constante." },
@@ -460,6 +460,7 @@
 
         // --- LÓGICA PRINCIPAL ---
         const CORRECT_PASSWORD = 'Karina'; // Contraseña a usar
+        const TOTAL_POEMS = POEMS.length;
         const STORAGE_KEY_START_DATE = 'poemStartDate'; // Clave para guardar el día de inicio
         
         const lockScreen = document.getElementById('lockScreen');
@@ -509,13 +510,13 @@
             const poem = POEMS[poemIndex];
             
             // --- Cargar Contenido del Poema ---
-            if (poem) {
+            if (poem && poemIndex < TOTAL_POEMS) {
                 const options = { year: 'numeric', month: 'long', day: 'numeric' };
                 const formattedDate = today.toLocaleDateString('es-ES', options);
 
                 currentPoemTitle.textContent = poem.title;
                 currentPoemBody.textContent = poem.body;
-                poemNumberEl.textContent = poemNumber;
+                poemNumberEl.textContent = `${poemNumber} de ${TOTAL_POEMS}`;
                 poemDateEl.textContent = formattedDate;
 
                 // --- Cargar Contador de Tiempo ---
@@ -532,7 +533,7 @@
                         const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
                         const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
 
-                        poemCounterEl.innerHTML = `¡Hoy es el **Día ${poemNumber}**! Quedan ${hours}h ${minutes}m ${seconds}s para el **Poema ${poemNumber + 1}**`;
+                        poemCounterEl.innerHTML = `¡Hoy es el **Día ${poemNumber}**! (Poema ${poemNumber} de ${TOTAL_POEMS}). Quedan ${hours}h ${minutes}m ${seconds}s para el **Poema ${poemNumber + 1}**`;
                     } else {
                         // Si el tiempo ha expirado, forzar una recarga para el nuevo poema
                         poemCounterEl.textContent = `¡Poema ${poemNumber + 1} listo! ¡Recarga la página!`;
@@ -545,11 +546,11 @@
 
             } else {
                 // Mensaje si no hay poema (después del día 100)
-                currentPoemTitle.textContent = "¡Felicitaciones! Has llegado al final de la colección.";
-                currentPoemBody.textContent = "Pero nuestro amor continúa creciendo cada día.\nPor favor, espera la siguiente entrega de poemas.";
-                poemNumberEl.textContent = '100+';
+                currentPoemTitle.textContent = "¡Felicitaciones! Has completado la colección de 100 Poemas.";
+                currentPoemBody.textContent = "Pero nuestro amor continúa creciendo cada día.\n¡Gracias por este viaje! Eres mi bendición.";
+                poemNumberEl.textContent = `${TOTAL_POEMS} de ${TOTAL_POEMS}`;
                 poemDateEl.textContent = today.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
-                poemCounterEl.textContent = ""; // No mostrar contador
+                poemCounterEl.textContent = "¡Misión cumplida! Nuestro amor es eterno."; // Mostrar mensaje de finalización
             }
         }
         
