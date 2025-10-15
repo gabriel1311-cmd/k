@@ -266,6 +266,217 @@
             z-index: 2;
         }
 
+        /* Botón de historial */
+        .history-btn {
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            background: linear-gradient(45deg, #ff69b4, #ff1493);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 105, 180, 0.3);
+        }
+
+        .history-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(255, 105, 180, 0.4);
+        }
+
+        /* Modal de historial */
+        .history-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            transition: opacity 0.3s ease;
+        }
+
+        .history-modal.hidden {
+            display: none;
+        }
+
+        .history-modal-content {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .history-header {
+            background: linear-gradient(45deg, #ff69b4, #ff1493);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            padding: 0;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .history-content {
+            padding: 2rem;
+        }
+
+        .history-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: #ffeef8;
+            border-radius: 15px;
+        }
+
+        .nav-btn {
+            padding: 0.6rem 1.2rem;
+            background: linear-gradient(45deg, #ff69b4, #ff1493);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .nav-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .nav-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .history-poem-info {
+            color: #d6336c;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .history-poem-display {
+            background: #fff;
+            border: 2px solid #ffc0cb;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 15px rgba(255, 105, 180, 0.2);
+        }
+
+        .history-poem-title {
+            color: #d6336c;
+            font-size: 1.4rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .history-poem-body {
+            font-family: 'Brush Script MT', cursive;
+            font-size: 1.3rem;
+            color: #5d3a5a;
+            font-style: italic;
+            line-height: 2;
+            text-align: center;
+            white-space: pre-line;
+        }
+
+        .history-list h4 {
+            color: #d6336c;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .poems-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ffc0cb;
+            border-radius: 10px;
+            padding: 1rem;
+        }
+
+        .poem-item {
+            padding: 0.8rem;
+            margin: 0.5rem 0;
+            background: #ffeef8;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid #ff69b4;
+        }
+
+        .poem-item:hover {
+            background: #ffd4e5;
+            transform: translateX(5px);
+        }
+
+        .poem-item.current {
+            background: linear-gradient(45deg, #ff69b4, #ff1493);
+            color: white;
+        }
+
+        .poem-item-title {
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .poem-item-preview {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 0.3rem;
+            font-style: italic;
+        }
+
+        .poem-item.current .poem-item-preview {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
         /* Responsive Design */
         @media screen and (max-width: 768px) {
             .ascii-art {
@@ -299,6 +510,36 @@
             .poem-info {
                 font-size: 1rem;
             }
+            
+            .history-modal-content {
+                width: 95%;
+                margin: 1rem;
+            }
+            
+            .history-content {
+                padding: 1rem;
+            }
+            
+            .history-navigation {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .nav-btn {
+                width: 100%;
+            }
+            
+            .history-poem-display {
+                padding: 1.5rem;
+            }
+            
+            .history-poem-title {
+                font-size: 1.2rem;
+            }
+            
+            .history-poem-body {
+                font-size: 1.1rem;
+            }
         }
     </style>
 </head>
@@ -331,6 +572,9 @@
             <div class="header-info" style="font-style: italic; margin-top: 0.5rem;">
                 <span id="poemCounter"></span>
             </div>
+            <div class="header-actions" style="margin-top: 1rem;">
+                <button id="viewHistoryBtn" class="history-btn">📚 Ver Poemas Pasados</button>
+            </div>
         </header>
 
         <section class="poem-container">
@@ -347,6 +591,31 @@
         <footer class="main-footer">
             <p>"Dios nos unió con hilos de eternidad."</p>
         </footer>
+
+        <!-- Modal para historial de poemas -->
+        <div id="poemsHistoryModal" class="history-modal hidden">
+            <div class="history-modal-content">
+                <div class="history-header">
+                    <h2>📚 Poemas Pasados</h2>
+                    <button id="closeHistoryBtn" class="close-btn">&times;</button>
+                </div>
+                <div class="history-content">
+                    <div class="history-navigation">
+                        <button id="prevPoemBtn" class="nav-btn">← Anterior</button>
+                        <span id="historyPoemInfo" class="history-poem-info"></span>
+                        <button id="nextPoemBtn" class="nav-btn">Siguiente →</button>
+                    </div>
+                    <div class="history-poem-display">
+                        <h3 id="historyPoemTitle" class="history-poem-title"></h3>
+                        <pre id="historyPoemBody" class="history-poem-body"></pre>
+                    </div>
+                    <div class="history-list">
+                        <h4>Lista de Poemas:</h4>
+                        <div id="poemsList" class="poems-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     </div>
 
@@ -473,18 +742,32 @@
         const heartsContainer = document.getElementById('heartsContainer');
         const poemCounterEl = document.getElementById('poemCounter');
         const currentTimeEl = document.getElementById('currentTime');
+        
+        // Elementos del modal de historial
+        const viewHistoryBtn = document.getElementById('viewHistoryBtn');
+        const poemsHistoryModal = document.getElementById('poemsHistoryModal');
+        const closeHistoryBtn = document.getElementById('closeHistoryBtn');
+        const prevPoemBtn = document.getElementById('prevPoemBtn');
+        const nextPoemBtn = document.getElementById('nextPoemBtn');
+        const historyPoemInfo = document.getElementById('historyPoemInfo');
+        const historyPoemTitle = document.getElementById('historyPoemTitle');
+        const historyPoemBody = document.getElementById('historyPoemBody');
+        const poemsList = document.getElementById('poemsList');
+        
+        // Variables para el historial
+        let currentHistoryIndex = 0;
+        let currentPoemIndex = 0; // Índice del poema actual del día
 
         /**
          * Inicializa la fecha de inicio si no existe (la primera vez que se abre).
          * Establece el 9 de octubre de 2025 como fecha de inicio para que el 14 de octubre sea el día 6.
          */
         function initializeStartDate() {
-            if (!localStorage.getItem(STORAGE_KEY_START_DATE)) {
-                // Establecer el 9 de octubre de 2025 como fecha de inicio
-                const startDate = new Date(2025, 9, 9); // Mes 9 = octubre (0-indexado)
-                startDate.setHours(0, 0, 0, 0);
-                localStorage.setItem(STORAGE_KEY_START_DATE, startDate.getTime());
-            }
+            // Forzar el reseteo para asegurar que use la fecha correcta
+            const startDate = new Date(2025, 9, 9); // Mes 9 = octubre (0-indexado)
+            startDate.setHours(0, 0, 0, 0);
+            localStorage.setItem(STORAGE_KEY_START_DATE, startDate.getTime());
+            console.log('Fecha de inicio establecida:', startDate.toLocaleDateString('es-ES'));
         }
 
         /**
@@ -514,13 +797,22 @@
             
             const poemIndex = Math.max(0, diffDays); // Asegurar que no sea negativo
             const poemNumber = poemIndex + 1; // Número de poema (ej. 1, 2, 3...)
+            
+            // Guardar el índice del poema actual para el historial
+            currentPoemIndex = poemIndex;
 
             // Debug: Mostrar información de cálculo en consola
+            console.log('=== DEBUG POEMA DIARIO ===');
+            console.log('Fecha de inicio (timestamp):', startDateTimestamp);
             console.log('Fecha de inicio:', startDate.toLocaleDateString('es-ES'));
+            console.log('Fecha actual (timestamp):', today.getTime());
             console.log('Fecha actual:', today.toLocaleDateString('es-ES'));
+            console.log('Diferencia en milisegundos:', diffTime);
             console.log('Días transcurridos:', diffDays);
             console.log('Índice del poema:', poemIndex);
             console.log('Número del poema:', poemNumber);
+            console.log('Poema seleccionado:', poem ? poem.title : 'NO ENCONTRADO');
+            console.log('========================');
 
             const poem = POEMS[poemIndex];
             
@@ -533,6 +825,9 @@
                 currentPoemBody.textContent = poem.body;
                 poemNumberEl.textContent = `${poemNumber} de ${TOTAL_POEMS}`;
                 poemDateEl.textContent = formattedDate;
+                
+                // Debug visual en la página
+                console.log('✅ Poema cargado correctamente:', poem.title);
 
                 // --- Cargar Contador de Tiempo ---
                 const tomorrow = new Date(today);
@@ -560,12 +855,20 @@
                 updateCounter(); // Ejecutar inmediatamente
 
             } else {
-                // Mensaje si no hay poema (después del día 100)
-                currentPoemTitle.textContent = "¡Felicitaciones! Has completado la colección de 100 Poemas.";
-                currentPoemBody.textContent = "Pero nuestro amor continúa creciendo cada día.\n¡Gracias por este viaje! Eres mi bendición.";
-                poemNumberEl.textContent = `${TOTAL_POEMS} de ${TOTAL_POEMS}`;
+                // Mensaje si no hay poema (después del día 100 o error en cálculo)
+                if (poemIndex >= TOTAL_POEMS) {
+                    currentPoemTitle.textContent = "¡Felicitaciones! Has completado la colección de 100 Poemas.";
+                    currentPoemBody.textContent = "Pero nuestro amor continúa creciendo cada día.\n¡Gracias por este viaje! Eres mi bendición.";
+                    poemNumberEl.textContent = `${TOTAL_POEMS} de ${TOTAL_POEMS}`;
+                    poemCounterEl.textContent = "¡Misión cumplida! Nuestro amor es eterno.";
+                } else {
+                    // Error en el cálculo
+                    currentPoemTitle.textContent = "Error en el cálculo del poema";
+                    currentPoemBody.textContent = `Índice calculado: ${poemIndex}\nDías transcurridos: ${diffDays}\nPor favor, recarga la página o usa resetStartDate() en la consola.`;
+                    poemNumberEl.textContent = "Error";
+                    poemCounterEl.textContent = "Error en el cálculo de fecha";
+                }
                 poemDateEl.textContent = today.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
-                poemCounterEl.textContent = "¡Misión cumplida! Nuestro amor es eterno."; // Mostrar mensaje de finalización
             }
         }
         
@@ -662,6 +965,129 @@
             }
             setInterval(createHeart, 800);
         }
+
+        // --- FUNCIONALIDAD DEL HISTORIAL DE POEMAS ---
+        
+        /**
+         * Abre el modal de historial de poemas
+         */
+        function openPoemsHistory() {
+            poemsHistoryModal.classList.remove('hidden');
+            currentHistoryIndex = currentPoemIndex; // Empezar desde el poema actual
+            updateHistoryDisplay();
+            generatePoemsList();
+        }
+
+        /**
+         * Cierra el modal de historial de poemas
+         */
+        function closePoemsHistory() {
+            poemsHistoryModal.classList.add('hidden');
+        }
+
+        /**
+         * Actualiza la visualización del poema en el historial
+         */
+        function updateHistoryDisplay() {
+            const poem = POEMS[currentHistoryIndex];
+            if (poem) {
+                historyPoemTitle.textContent = poem.title;
+                historyPoemBody.textContent = poem.body;
+                historyPoemInfo.textContent = `Poema ${currentHistoryIndex + 1} de ${TOTAL_POEMS}`;
+                
+                // Actualizar botones de navegación
+                prevPoemBtn.disabled = currentHistoryIndex <= 0;
+                nextPoemBtn.disabled = currentHistoryIndex >= currentPoemIndex; // Solo hasta el poema actual
+                
+                // Actualizar la lista para mostrar el poema seleccionado
+                updatePoemsListSelection();
+            }
+        }
+
+        /**
+         * Navega al poema anterior en el historial
+         */
+        function goToPreviousPoem() {
+            if (currentHistoryIndex > 0) {
+                currentHistoryIndex--;
+                updateHistoryDisplay();
+            }
+        }
+
+        /**
+         * Navega al poema siguiente en el historial
+         */
+        function goToNextPoem() {
+            if (currentHistoryIndex < currentPoemIndex) {
+                currentHistoryIndex++;
+                updateHistoryDisplay();
+            }
+        }
+
+        /**
+         * Genera la lista de poemas disponibles
+         */
+        function generatePoemsList() {
+            poemsList.innerHTML = '';
+            
+            for (let i = 0; i <= currentPoemIndex; i++) {
+                const poem = POEMS[i];
+                if (poem) {
+                    const poemItem = document.createElement('div');
+                    poemItem.className = `poem-item ${i === currentHistoryIndex ? 'current' : ''}`;
+                    poemItem.onclick = () => {
+                        currentHistoryIndex = i;
+                        updateHistoryDisplay();
+                    };
+                    
+                    const title = document.createElement('div');
+                    title.className = 'poem-item-title';
+                    title.textContent = poem.title;
+                    
+                    const preview = document.createElement('div');
+                    preview.className = 'poem-item-preview';
+                    preview.textContent = poem.body.substring(0, 50) + '...';
+                    
+                    poemItem.appendChild(title);
+                    poemItem.appendChild(preview);
+                    poemsList.appendChild(poemItem);
+                }
+            }
+        }
+
+        /**
+         * Actualiza la selección en la lista de poemas
+         */
+        function updatePoemsListSelection() {
+            const items = poemsList.querySelectorAll('.poem-item');
+            items.forEach((item, index) => {
+                if (index === currentHistoryIndex) {
+                    item.classList.add('current');
+                } else {
+                    item.classList.remove('current');
+                }
+            });
+        }
+
+        // Event listeners para el historial
+        viewHistoryBtn.addEventListener('click', openPoemsHistory);
+        closeHistoryBtn.addEventListener('click', closePoemsHistory);
+        prevPoemBtn.addEventListener('click', goToPreviousPoem);
+        nextPoemBtn.addEventListener('click', goToNextPoem);
+
+        // Cerrar modal al hacer clic fuera de él
+        poemsHistoryModal.addEventListener('click', function(e) {
+            if (e.target === poemsHistoryModal) {
+                closePoemsHistory();
+            }
+        });
+
+        // Cerrar modal con tecla Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && !poemsHistoryModal.classList.contains('hidden')) {
+                closePoemsHistory();
+            }
+        });
     </script>
 
 </body>
