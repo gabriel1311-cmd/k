@@ -476,14 +476,25 @@
 
         /**
          * Inicializa la fecha de inicio si no existe (la primera vez que se abre).
+         * Establece el 9 de octubre de 2025 como fecha de inicio para que el 14 de octubre sea el día 6.
          */
         function initializeStartDate() {
             if (!localStorage.getItem(STORAGE_KEY_START_DATE)) {
-                // Guarda la fecha actual (solo la parte de la fecha, sin hora) como inicio
-                const today = new Date();
-                today.setHours(0, 0, 0, 0); // Establecer la hora a medianoche para cálculo de días
-                localStorage.setItem(STORAGE_KEY_START_DATE, today.getTime());
+                // Establecer el 9 de octubre de 2025 como fecha de inicio
+                const startDate = new Date(2025, 9, 9); // Mes 9 = octubre (0-indexado)
+                startDate.setHours(0, 0, 0, 0);
+                localStorage.setItem(STORAGE_KEY_START_DATE, startDate.getTime());
             }
+        }
+
+        /**
+         * Función para resetear la fecha de inicio (útil para testing o corrección)
+         * Se puede llamar desde la consola del navegador: resetStartDate()
+         */
+        function resetStartDate() {
+            localStorage.removeItem(STORAGE_KEY_START_DATE);
+            initializeStartDate();
+            console.log('Fecha de inicio reseteada. Recarga la página para ver los cambios.');
         }
 
         /**
@@ -498,16 +509,23 @@
             today.setHours(0, 0, 0, 0); // Comparar solo la fecha, no la hora
 
             // Cálculo del día actual (Poema 1 es el día 0, Poema 2 es el día 1, etc.)
-            const diffTime = Math.abs(today - startDate);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+            const diffTime = today - startDate;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); 
             
-            const poemIndex = diffDays; 
-            const poemNumber = diffDays + 1; // Número de poema (ej. 1, 2, 3...)
+            const poemIndex = Math.max(0, diffDays); // Asegurar que no sea negativo
+            const poemNumber = poemIndex + 1; // Número de poema (ej. 1, 2, 3...)
+
+            // Debug: Mostrar información de cálculo en consola
+            console.log('Fecha de inicio:', startDate.toLocaleDateString('es-ES'));
+            console.log('Fecha actual:', today.toLocaleDateString('es-ES'));
+            console.log('Días transcurridos:', diffDays);
+            console.log('Índice del poema:', poemIndex);
+            console.log('Número del poema:', poemNumber);
 
             const poem = POEMS[poemIndex];
             
             // --- Cargar Contenido del Poema ---
-            if (poem && poemIndex < TOTAL_POEMS) {
+            if (poem && poemIndex < TOTAL_POEMS && poemIndex >= 0) {
                 const options = { year: 'numeric', month: 'long', day: 'numeric' };
                 const formattedDate = today.toLocaleDateString('es-ES', options);
 
